@@ -5,8 +5,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: JobAffinity CPT Manager 1.4.0\n"
 "Report-Msgid-Bugs-To: https://github.com/QuentinIS/jobaffinity-cpt-manager/issues\n"
-"POT-Creation-Date: 2026-09-16 16:10+0000\n"
-"PO-Revision-Date: 2026-09-16 16:10+0000\n"
+"POT-Creation-Date: 2026-09-16 17:43+0000\n"
+"PO-Revision-Date: 2026-09-16 17:43+0000\n"
 "Last-Translator: JobAffinity <contact@jobaffinity.fr>\n"
 "Language-Team: French <fr@li.org>\n"
 "Language: fr_FR\n"
@@ -353,7 +353,7 @@ msgstr "Attributs du %s"
 #: includes/class-ccptm-meta.php:240
 #, php-format
 msgid "Custom field \"%s\", declared by JobAffinity CPT Manager."
-msgstr "Champ personnalisé « %s », déclaré par Custom CPT Manager."
+msgstr "Champ personnalisé « %s », déclaré par JobAffinity CPT Manager."
 
 #: includes/class-ccptm-rest.php:80
 msgid "Custom fields (meta) attached to the post."
@@ -401,9 +401,8 @@ msgstr "La base de route REST \"%1$s\" est deja utilisee par la taxonomie \"%2$s
 
 #: jobaffinity-cpt-manager.php:147
 msgid "JobAffinity CPT Manager: please configure the custom post type key. "
-msgstr "Custom CPT Manager : veuillez configurer la clé du Custom Post Type. "
+msgstr "JobAffinity CPT Manager : veuillez configurer la clé du Custom Post Type. "
 
 #: jobaffinity-cpt-manager.php:148
 msgid "Open settings"
-
 msgstr "Ouvrir la configuration"

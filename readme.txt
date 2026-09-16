@@ -1,5 +1,5 @@
 === JobAffinity CPT Manager ===
-Contributors: YOUR_WPORG_USERNAME
+Contributors: quentinintuition
 Tags: job board, recruitment, custom post type, rest api, xml-rpc
 Requires at least: 5.6
 Tested up to: 7.1
@@ -81,8 +81,8 @@ No. It makes no outbound HTTP request at all. Communication is one-way: JobAffin
 
 == Screenshots ==
 
-1. The settings screen, under Settings > JobAffinity CPT Manager.
-2. The generated custom post type in the admin sidebar and list table.
+1. The settings screen: post type key, REST route base, labels, interception options and the list of declared fields.
+2. Where to find it, under Settings > JobAffinity CPT Manager.
 
 == Changelog ==
 
