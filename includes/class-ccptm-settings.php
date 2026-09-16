@@ -4,7 +4,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Gestion centralisée des réglages.
+ * Central handling of the plugin settings.
  */
 class CCPTM_Settings {
 
@@ -20,7 +20,7 @@ class CCPTM_Settings {
 	private function __construct() {}
 
 	/**
-	 * Récupère les réglages (avec fusion des valeurs par défaut).
+	 * Returns the settings, merged over the defaults.
 	 */
 	public static function get() {
 		$defaults = array(
@@ -46,11 +46,11 @@ class CCPTM_Settings {
 	}
 
 	/**
-	 * Base de route REST effective.
+	 * The effective REST route base.
 	 *
-	 * On resout le repli a la lecture plutot que de figer la valeur en base :
-	 * ainsi, renommer la cle du CPT deplace automatiquement la route au lieu de
-	 * laisser derriere une base obsolete.
+	 * The fallback is resolved on read rather than frozen into the database, so
+	 * that renaming the post type key moves the route with it instead of
+	 * leaving a stale base behind.
 	 *
 	 * @return string
 	 */
@@ -62,10 +62,10 @@ class CCPTM_Settings {
 	}
 
 	/**
-	 * Sauvegarde les réglages après sanitisation.
+	 * Sanitises and saves the settings.
 	 *
 	 * @param array $input
-	 * @return array resultat = array( 'success' => bool, 'errors' => string[], 'data' => array )
+	 * @return array array( 'success' => bool, 'errors' => string[], 'data' => array )
 	 */
 	public static function save( $input ) {
 		$errors  = array();
@@ -78,11 +78,11 @@ class CCPTM_Settings {
 			$errors[] = __( 'The post type key is required and must be 1 to 20 lowercase alphanumeric characters. Hyphens and underscores are allowed.', 'jobaffinity-cpt-manager' );
 		}
 
-		// Évite les collisions avec les post types natifs et quelques clés réservées.
+		// Avoid collisions with native post types and a few reserved keys.
 		$reserved = array( 'post', 'page', 'attachment', 'revision', 'nav_menu_item', 'custom_css', 'customize_changeset', 'oembed_cache', 'user_request', 'wp_block', 'action', 'author', 'order', 'theme' );
 		if ( in_array( $cpt_key, $reserved, true ) ) {
 			$errors[] = sprintf(
-				/* translators: %s: clé choisie */
+				/* translators: %s: the key that was entered */
 				__( 'The key "%s" is reserved by WordPress. Please choose another value.', 'jobaffinity-cpt-manager' ),
 				$cpt_key
 			);
@@ -108,18 +108,18 @@ class CCPTM_Settings {
 
 		$register_meta_on_post = ! empty( $input['register_meta_on_post'] );
 
-		// Base de route REST. Vide = repli sur la cle du CPT (resolu a la lecture
-		// par get_rest_base()), mais on valide quand meme la base effective :
-		// une cle comme "search" passerait le filtre $reserved ci-dessus tout en
-		// ecrasant silencieusement la route /wp/v2/search du coeur.
+		// REST route base. Empty means falling back to the post type key, resolved
+		// on read by get_rest_base(). The effective base is validated regardless:
+		// a key such as "search" would pass the $reserved filter above while
+		// silently overwriting core's /wp/v2/search route.
 		$rest_base = self::sanitize_rest_base( isset( $input['rest_base'] ) ? $input['rest_base'] : '' );
 
 		if ( '' !== $cpt_key ) {
 			$effective_base = ( '' !== $rest_base ) ? $rest_base : $cpt_key;
 
-			// On s'exclut nous-memes, sous l'ancienne comme sous la nouvelle cle,
-			// sinon un simple re-enregistrement du formulaire signalerait un
-			// conflit contre notre propre CPT deja enregistre.
+			// Exclude ourselves under both the old and the new key, otherwise simply
+			// re-saving the form would report a conflict against our own, already
+			// registered post type.
 			$conflict = self::rest_base_conflict( $effective_base, array( $current['cpt_key'], $cpt_key ) );
 
 			if ( '' !== $conflict ) {
@@ -127,9 +127,9 @@ class CCPTM_Settings {
 			}
 		}
 
-		// Seuls les AJOUTS sont stockes : le socle JobAffinity est declare
-		// d'office par CCPTM_Meta::get_keys(). Une cle du socle ressaisie ici
-		// est donc simplement retiree, pas dupliquee.
+		// Only ADDITIONS are stored: the JobAffinity set is declared unconditionally
+		// by CCPTM_Meta::get_keys(). A required key re-entered here is therefore
+		// simply dropped, not duplicated.
 		$extra_meta_keys = array_values(
 			array_diff(
 				self::sanitize_meta_keys( isset( $input['extra_meta_keys'] ) ? $input['extra_meta_keys'] : '' ),
@@ -145,7 +145,7 @@ class CCPTM_Settings {
 			);
 		}
 
-		// Si la clé change, il faudra flush les rewrite rules.
+		// A change of key means the rewrite rules have to be flushed.
 		$key_changed = ( $current['cpt_key'] !== $cpt_key );
 
 		$data = array(
@@ -176,24 +176,24 @@ class CCPTM_Settings {
 	}
 
 	/**
-	 * Migration de l'ancienne cle "meta_keys" vers "extra_meta_keys".
+	 * Migrates the old "meta_keys" option to "extra_meta_keys".
 	 *
-	 * Jusqu'a la 1.2.0, "meta_keys" contenait la liste COMPLETE des cles
-	 * declarees et remplacait le socle JobAffinity. Depuis la 1.3.0, le socle
-	 * est inconditionnel et l'option ne stocke plus que les ajouts. On convertit
-	 * donc l'ancienne liste en retirant les cles du socle : aucune cle
-	 * personnalisee n'est perdue, et les 22 cles redeviennent garanties.
+	 * Up to 1.2.0, "meta_keys" held the COMPLETE list of declared keys and
+	 * replaced the JobAffinity set. Since 1.3.0 that set is unconditional and the
+	 * option only stores additions, so the old list is converted by removing the
+	 * required keys from it: no custom key is lost, and the 22 keys are
+	 * guaranteed again.
 	 *
-	 * Le declencheur est la PRESENCE de l'ancienne cle, pas un numero de
-	 * version : la methode est idempotente et s'arrete d'elle-meme des que la
-	 * conversion a eu lieu. Sur un reseau multisite, elle s'execute une fois par
-	 * site (l'option est par site).
+	 * The trigger is the PRESENCE of the old key, not a version number: the
+	 * method is idempotent and stops on its own once the conversion has
+	 * happened. On a multisite network it runs once per site, since the option
+	 * is per site.
 	 */
 	public static function maybe_migrate() {
 		$stored = get_option( CCPTM_OPTION_KEY, array() );
 
 		if ( ! is_array( $stored ) || ! array_key_exists( 'meta_keys', $stored ) ) {
-			return; // Installation neuve, ou migration deja faite.
+			return; // Fresh install, or the migration already ran.
 		}
 
 		$legacy = is_array( $stored['meta_keys'] ) ? $stored['meta_keys'] : array();
@@ -215,7 +215,7 @@ class CCPTM_Settings {
 	}
 
 	/**
-	 * Sanitise la clé du CPT : minuscules, alphanumérique + underscore/tiret, max 20 caractères.
+	 * Sanitises the post type key: lowercase alphanumerics plus underscore and hyphen, 20 characters max.
 	 */
 	public static function sanitize_key( $key ) {
 		$key = strtolower( (string) $key );
@@ -225,12 +225,12 @@ class CCPTM_Settings {
 	}
 
 	/**
-	 * Sanitise une base de route REST.
+	 * Sanitises a REST route base.
 	 *
-	 * Volontairement sans "/" : le coeur s'en sert pour des sous-ressources
-	 * (font-families/(?P<id>)/font-faces) et l'autoriser ici reviendrait a
-	 * laisser injecter du motif dans register_rest_route(). 32 caracteres :
-	 * rest_base n'a pas la limite de longueur d'une cle de post type.
+	 * "/" is deliberately excluded: core uses it for sub-resources such as
+	 * font-families/(?P<id>)/font-faces, and allowing it here would amount to
+	 * letting a pattern be injected into register_rest_route(). 32 characters,
+	 * because rest_base has no post type key length limit.
 	 *
 	 * @param string $base
 	 * @return string
@@ -243,9 +243,9 @@ class CCPTM_Settings {
 	}
 
 	/**
-	 * Sanitise une liste de cles meta saisie dans une zone de texte.
+	 * Sanitises a list of meta keys entered in a textarea.
 	 *
-	 * @param string|array $raw Une cle par ligne (virgules acceptees aussi).
+	 * @param string|array $raw One key per line; commas are accepted too.
 	 * @return string[]
 	 */
 	public static function sanitize_meta_keys( $raw ) {
@@ -260,8 +260,8 @@ class CCPTM_Settings {
 		foreach ( (array) $parts as $key ) {
 			$key = sanitize_key( trim( (string) $key ) );
 
-			// Une cle protegee ("_xxx") declaree avec show_in_rest exposerait
-			// publiquement une meta interne.
+			// A protected key ("_xxx") declared with show_in_rest would publicly
+			// expose an internal meta value.
 			if ( '' === $key || is_protected_meta( $key, 'post' ) ) {
 				continue;
 			}
@@ -273,7 +273,7 @@ class CCPTM_Settings {
 	}
 
 	/**
-	 * Bases de route reservees par le coeur dans l'espace de noms wp/v2.
+	 * Route bases reserved by core in the wp/v2 namespace.
 	 *
 	 * @return string[]
 	 */
@@ -290,18 +290,18 @@ class CCPTM_Settings {
 	}
 
 	/**
-	 * Detecte une collision de base de route REST.
+	 * Detects a REST route base collision.
 	 *
-	 * Deux post types partageant la meme rest_base enregistrent la meme route :
-	 * le second ecrase les gestionnaires du premier, silencieusement. D'ou une
-	 * erreur bloquante plutot qu'un avertissement.
+	 * Two post types sharing a rest_base register the same route: the second
+	 * silently overwrites the first one's handlers. Hence a blocking error
+	 * rather than a warning.
 	 *
-	 * Appelee depuis handle_save(), donc bien apres "init" : le registre des
-	 * post types et des taxonomies est complet a ce moment-la.
+	 * Called from handle_save(), well after "init", so the post type and
+	 * taxonomy registries are complete by then.
 	 *
 	 * @param string   $rest_base
-	 * @param string[] $exclude   Post types a ignorer (les notres).
-	 * @return string Message d'erreur, ou chaine vide si aucun conflit.
+	 * @param string[] $exclude   Post types to ignore, namely our own.
+	 * @return string Error message, or an empty string when there is no conflict.
 	 */
 	public static function rest_base_conflict( $rest_base, $exclude = array() ) {
 		if ( '' === $rest_base ) {
@@ -310,7 +310,7 @@ class CCPTM_Settings {
 
 		if ( in_array( $rest_base, self::core_rest_bases(), true ) ) {
 			return sprintf(
-				/* translators: %s: base de route choisie */
+				/* translators: %s: the route base that was entered */
 				__( 'The REST route base "%s" is reserved by WordPress core. Please choose another value.', 'jobaffinity-cpt-manager' ),
 				$rest_base
 			);
@@ -321,7 +321,7 @@ class CCPTM_Settings {
 				continue;
 			}
 
-			// Une collision ne compte que dans le meme espace de noms.
+			// A collision only counts within the same namespace.
 			$namespace = ! empty( $post_type->rest_namespace ) ? $post_type->rest_namespace : 'wp/v2';
 			if ( 'wp/v2' !== $namespace ) {
 				continue;
@@ -331,7 +331,7 @@ class CCPTM_Settings {
 
 			if ( $base === $rest_base ) {
 				return sprintf(
-					/* translators: 1: base de route, 2: post type en conflit */
+					/* translators: 1: route base, 2: conflicting post type */
 					__( 'The REST route base "%1$s" is already used by the "%2$s" post type.', 'jobaffinity-cpt-manager' ),
 					$rest_base,
 					$post_type->name
@@ -353,7 +353,7 @@ class CCPTM_Settings {
 
 			if ( $base === $rest_base ) {
 				return sprintf(
-					/* translators: 1: base de route, 2: taxonomie en conflit */
+					/* translators: 1: route base, 2: conflicting taxonomy */
 					__( 'The REST route base "%1$s" is already used by the "%2$s" taxonomy.', 'jobaffinity-cpt-manager' ),
 					$rest_base,
 					$taxonomy->name

@@ -1,17 +1,17 @@
 <?php
 /**
- * Désinstallation du plugin.
+ * Plugin uninstall routine.
  *
- * On supprime uniquement les données créées par le plugin lui-même :
- * l'option de réglages et les transients de travail.
+ * Only data the plugin created itself is removed: the settings option and
+ * its working transients.
  *
- * On ne touche PAS aux contenus : les publications du Custom Post Type,
- * leurs métadonnées et leurs termes de taxonomie restent en base. Elles
- * appartiennent au site, pas au plugin, et une suppression silencieuse
- * serait irréversible. Réactiver le plugin avec la même clé de CPT les
- * rend immédiatement de nouveau visibles.
+ * Content is deliberately left alone. The custom post type's posts, their
+ * meta values and their taxonomy terms stay in the database: they belong to
+ * the site, not to the plugin, and deleting them silently would be
+ * irreversible. Reactivating the plugin with the same post type key makes
+ * them visible again immediately.
  *
- * @package Custom_CPT_Manager
+ * @package JobAffinity_CPT_Manager
  */
 
 if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
@@ -19,7 +19,7 @@ if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
 }
 
 /**
- * Nettoie les données du plugin pour le site courant.
+ * Cleans up the plugin's data for the current site.
  */
 function ccptm_uninstall_site() {
 	global $wpdb;
@@ -27,9 +27,9 @@ function ccptm_uninstall_site() {
 	delete_option( 'ccptm_settings' );
 	delete_transient( 'ccptm_flush_rewrite' );
 
-	// Les transients d'erreurs sont nommés par identifiant utilisateur
-	// (ccptm_errors_12) : pas de liste connue, donc balayage ciblé.
-	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Nettoyage ponctuel à la désinstallation, aucune API cœur ne permet d'énumérer des transients par préfixe.
+	// Error transients are named after a user id (ccptm_errors_12), so there
+	// is no known list to iterate: sweep them by prefix instead.
+	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- One-off cleanup at uninstall; no core API enumerates transients by prefix.
 	$wpdb->query(
 		$wpdb->prepare(
 			"DELETE FROM {$wpdb->options} WHERE option_name LIKE %s OR option_name LIKE %s",
@@ -39,8 +39,8 @@ function ccptm_uninstall_site() {
 	);
 }
 
-// L'option est stockée par site : sur un réseau multisite, il faut donc
-// parcourir chaque site plutôt que de nettoyer uniquement le site courant.
+// The option is stored per site, so on a multisite network every site has to
+// be visited rather than just the current one.
 if ( is_multisite() ) {
 	$ccptm_sites = get_sites(
 		array(

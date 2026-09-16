@@ -27,7 +27,7 @@
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
-	exit; // Pas d'accès direct.
+	exit; // No direct access.
 }
 
 define( 'CCPTM_VERSION', '1.4.0' );
@@ -43,8 +43,8 @@ require_once CCPTM_PLUGIN_DIR . 'includes/class-ccptm-xmlrpc.php';
 require_once CCPTM_PLUGIN_DIR . 'includes/class-ccptm-admin.php';
 
 /**
- * Activation : on prépare des options par défaut vides
- * (l'admin choisira la clé après activation via l'écran de config).
+ * Activation: seed empty default options. The administrator picks the post
+ * type key afterwards, on the settings screen.
  */
 function ccptm_activate() {
 	$existing = get_option( CCPTM_OPTION_KEY );
@@ -64,13 +64,13 @@ function ccptm_activate() {
 		);
 	}
 
-	// On flush après que le CPT sera enregistré à la prochaine requête.
+	// Flushed on the next request, once the post type has been registered.
 	set_transient( 'ccptm_flush_rewrite', 1, 60 );
 }
 register_activation_hook( __FILE__, 'ccptm_activate' );
 
 /**
- * Désactivation : on nettoie les règles de réécriture.
+ * Deactivation: clear the rewrite rules.
  */
 function ccptm_deactivate() {
 	flush_rewrite_rules();
@@ -78,20 +78,20 @@ function ccptm_deactivate() {
 register_deactivation_hook( __FILE__, 'ccptm_deactivate' );
 
 /**
- * Charge les traductions livrées dans /languages.
+ * Loads the translations bundled in /languages.
  *
- * Le Plugin Check signale load_plugin_textdomain() comme superflu depuis
- * WordPress 4.6, ce qui n'est vrai que pour les catalogues téléchargés dans
- * WP_LANG_DIR/plugins/. Le chargement automatique d'un dossier /languages
- * embarqué, via l'en-tête Domain Path, n'existe que depuis WordPress 6.2 ;
- * comme le plugin annonce "Requires at least: 5.6" et livre sa propre
- * traduction française, l'appel reste nécessaire.
+ * Plugin Check flags load_plugin_textdomain() as unnecessary since WordPress
+ * 4.6, which only holds for catalogues downloaded into WP_LANG_DIR/plugins/.
+ * Automatic loading of a bundled /languages directory, through the Domain
+ * Path header, only arrived in WordPress 6.2. This plugin declares
+ * "Requires at least: 5.6" and ships its own French catalogue, so the call
+ * is still needed.
  *
- * Sur "init" priorité 0 et non "plugins_loaded" : depuis WordPress 6.7,
- * charger un text domain avant "init" déclenche une notice
- * _load_textdomain_just_in_time. La priorité 0 passe malgré tout devant
- * CCPTM_CPT::register_cpt() (init, priorité 5), premier consommateur de
- * chaînes traduites.
+ * On "init" priority 0 rather than "plugins_loaded": since WordPress 6.7,
+ * loading a text domain before "init" triggers a
+ * _load_textdomain_just_in_time notice. Priority 0 still runs ahead of
+ * CCPTM_CPT::register_cpt() (init, priority 5), the first consumer of
+ * translated strings.
  */
 function ccptm_load_textdomain() {
 	load_plugin_textdomain(
@@ -103,13 +103,13 @@ function ccptm_load_textdomain() {
 add_action( 'init', 'ccptm_load_textdomain', 0 );
 
 /**
- * Bootstrap : on initialise les classes du plugin.
+ * Bootstrap: instantiate the plugin's classes.
  */
 function ccptm_bootstrap() {
 	CCPTM_Settings::instance();
 
-	// Avant CCPTM_Meta : la conversion de l'ancienne cle "meta_keys" doit avoir
-	// eu lieu quand register_meta_keys() s'execute sur "init" (priorite 11).
+	// Before CCPTM_Meta: the old "meta_keys" option must have been converted by
+	// the time register_meta_keys() runs on "init" (priority 11).
 	CCPTM_Settings::maybe_migrate();
 
 	CCPTM_CPT::instance();
@@ -121,7 +121,7 @@ function ccptm_bootstrap() {
 		CCPTM_Admin::instance();
 	}
 
-	// Flush des rewrite rules une seule fois après activation/modification de la clé.
+	// Flush the rewrite rules once, after activation or a change of key.
 	if ( get_transient( 'ccptm_flush_rewrite' ) ) {
 		flush_rewrite_rules();
 		delete_transient( 'ccptm_flush_rewrite' );
@@ -130,7 +130,7 @@ function ccptm_bootstrap() {
 add_action( 'plugins_loaded', 'ccptm_bootstrap' );
 
 /**
- * Avertissement admin si le CPT n'est pas encore configuré.
+ * Admin warning shown while the post type has not been configured yet.
  */
 function ccptm_admin_notice_not_configured() {
 	if ( ! current_user_can( 'manage_options' ) ) {

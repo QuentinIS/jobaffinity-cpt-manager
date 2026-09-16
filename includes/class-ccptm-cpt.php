@@ -4,12 +4,12 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Enregistrement du Custom Post Type configurable.
+ * Registration of the configurable custom post type.
  *
- * Le CPT est enregistré de manière à être "identique" aux posts natifs :
- * - mêmes supports (title, editor, author, thumbnail, excerpt, comments, custom-fields, etc.)
- * - exposé dans l'API REST avec la même base de route que le post standard
- * - visible dans l'admin, avec ses propres capabilities basées sur celles du post
+ * The post type is registered to behave exactly like native posts:
+ * - the same supports (title, editor, author, thumbnail, excerpt, comments, custom-fields, and so on)
+ * - exposed in the REST API the same way a standard post is
+ * - visible in the admin, with capabilities derived from those of 'post'
  */
 class CCPTM_CPT {
 
@@ -27,7 +27,7 @@ class CCPTM_CPT {
 	}
 
 	/**
-	 * Enregistre le CPT si une clé est configurée.
+	 * Registers the post type, if a key has been configured.
 	 */
 	public function register_cpt() {
 		$settings = CCPTM_Settings::get();
@@ -81,14 +81,14 @@ class CCPTM_CPT {
 			'show_in_nav_menus'   => true,
 			'show_in_admin_bar'   => true,
 			'show_in_rest'        => true,
-			// Base de route REST découplée de la clé : permet d'exposer
-			// /wp/v2/offer même si le CPT s'appelle "offer-intern".
-			// Vide dans les réglages = repli sur la clé du CPT.
+			// The REST route base is decoupled from the key, so /wp/v2/offer can be
+			// served even when the post type is keyed "offer-intern".
+			// Empty in the settings means falling back to the post type key.
 			'rest_base'           => CCPTM_Settings::get_rest_base(),
 			'rest_controller_class' => 'WP_REST_Posts_Controller',
 			'menu_position'       => 20,
 			'menu_icon'           => $settings['menu_icon'],
-			'capability_type'     => 'post', // on réutilise les caps de 'post' => éditeurs/auteurs/admins
+			'capability_type'     => 'post', // Reuse the caps of 'post': admins, editors and authors.
 			'map_meta_cap'        => true,
 			'hierarchical'        => false,
 			'supports'            => array(
@@ -98,7 +98,7 @@ class CCPTM_CPT {
 				'thumbnail',
 				'excerpt',
 				'trackbacks',
-				'custom-fields', // essentiel pour les champs personnalisés via l'API REST
+				'custom-fields', // Essential for custom fields over the REST API.
 				'comments',
 				'revisions',
 				'page-attributes',

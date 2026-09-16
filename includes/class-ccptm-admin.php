@@ -4,7 +4,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Page de configuration dans l'admin WordPress.
+ * The settings screen in the WordPress admin.
  */
 class CCPTM_Admin {
 
@@ -45,7 +45,7 @@ class CCPTM_Admin {
 			$notices[] = array( 'type' => 'success', 'msg' => __( 'Settings saved.', 'jobaffinity-cpt-manager' ) );
 		}
 
-		// Messages d'erreur transmis via transient.
+		// Error messages handed over through a transient.
 		$err_transient = get_transient( 'ccptm_errors_' . get_current_user_id() );
 		if ( is_array( $err_transient ) ) {
 			foreach ( $err_transient as $e ) {
@@ -125,7 +125,7 @@ class CCPTM_Admin {
 									<?php if ( ! empty( $settings['cpt_key'] ) ) : ?>
 										<?php
 										printf(
-											/* translators: %s: URL de l'endpoint REST */
+											/* translators: %s: the REST endpoint URL */
 											esc_html__( 'Current endpoint: %s', 'jobaffinity-cpt-manager' ),
 											'<code>' . esc_html( rest_url( 'wp/v2/' . CCPTM_Settings::get_rest_base() ) ) . '</code>'
 										);
@@ -187,7 +187,7 @@ class CCPTM_Admin {
 								<p class="description">
 									<?php
 									printf(
-										/* translators: %s: lien vers la liste des dashicons */
+										/* translators: %s: link to the Dashicons list */
 										esc_html__( 'Name of a WordPress Dashicon. See the full list at %s.', 'jobaffinity-cpt-manager' ),
 										'<a href="https://developer.wordpress.org/resource/dashicons/" target="_blank" rel="noopener">developer.wordpress.org</a>'
 									);
@@ -246,7 +246,7 @@ class CCPTM_Admin {
 								<p>
 									<?php
 									printf(
-										/* translators: %d: nombre de clés du socle */
+										/* translators: %d: number of required keys */
 										esc_html__( '%d keys are always declared:', 'jobaffinity-cpt-manager' ),
 										count( CCPTM_Meta::DEFAULT_KEYS )
 									);
@@ -317,8 +317,8 @@ class CCPTM_Admin {
 				$base      = rest_url( 'wp/v2/' . $rest_base );
 				$meta_keys = CCPTM_Meta::get_keys();
 
-				// Deux post types partageant la même rest_base enregistrent la
-				// même route : le second écrase le premier, sans aucune erreur.
+				// Two post types sharing a rest_base register the same route: the
+				// second silently overwrites the first, with no error raised.
 				$conflict = CCPTM_Settings::rest_base_conflict( $rest_base, array( $settings['cpt_key'] ) );
 				?>
 
@@ -336,7 +336,7 @@ class CCPTM_Admin {
 					<p class="description">
 						<?php
 						printf(
-							/* translators: 1: clé du CPT, 2: base de route REST */
+							/* translators: 1: post type key, 2: REST route base */
 							esc_html__( 'The post type key (%1$s) and the REST route base (%2$s) differ on purpose.', 'jobaffinity-cpt-manager' ),
 							'<code>' . esc_html( $settings['cpt_key'] ) . '</code>',
 							'<code>' . esc_html( $rest_base ) . '</code>'
@@ -376,7 +376,7 @@ class CCPTM_Admin {
 				<p>
 					<?php
 					printf(
-						/* translators: 1: total des clés, 2: clés du socle, 3: clés supplémentaires */
+						/* translators: 1: total number of keys, 2: required keys, 3: additional keys */
 						esc_html__( '%1$d keys (%2$d required + %3$d additional), declared on:', 'jobaffinity-cpt-manager' ),
 						count( $meta_keys ),
 						count( CCPTM_Meta::DEFAULT_KEYS ),
@@ -389,7 +389,7 @@ class CCPTM_Admin {
 				<p class="description">
 					<?php
 					printf(
-						/* translators: %s: commande de vérification */
+						/* translators: %s: the command to run */
 						esc_html__( 'To check what the API actually exposes: %s', 'jobaffinity-cpt-manager' ),
 						'<code>curl -X OPTIONS ' . esc_html( $base ) . '</code>'
 					);
@@ -408,7 +408,7 @@ class CCPTM_Admin {
 	}
 
 	/**
-	 * Traitement du formulaire.
+	 * Handles the settings form submission.
 	 */
 	public function handle_save() {
 		if ( ! current_user_can( 'manage_options' ) ) {
@@ -425,10 +425,9 @@ class CCPTM_Admin {
 			'intercept_xmlrpc' => isset( $_POST['intercept_xmlrpc'] ) ? '1' : '',
 			'intercept_rest'   => isset( $_POST['intercept_rest'] )   ? '1' : '',
 			'rest_base'        => isset( $_POST['rest_base'] ) ? sanitize_text_field( wp_unslash( $_POST['rest_base'] ) ) : '',
-			// wp_unslash avant le découpage : sanitize_key mangerait les
-			// antislashs ajoutés par WordPress. sanitize_textarea_field (et non
-			// sanitize_text_field) pour préserver les retours à la ligne qui
-			// séparent les clés.
+			// wp_unslash before splitting: sanitize_key would eat the backslashes
+			// WordPress adds. sanitize_textarea_field, not sanitize_text_field, so
+			// that the newlines separating the keys survive.
 			'extra_meta_keys'  => isset( $_POST['extra_meta_keys'] ) ? sanitize_textarea_field( wp_unslash( $_POST['extra_meta_keys'] ) ) : '',
 			'register_meta_on_post' => isset( $_POST['register_meta_on_post'] ) ? '1' : '',
 		);

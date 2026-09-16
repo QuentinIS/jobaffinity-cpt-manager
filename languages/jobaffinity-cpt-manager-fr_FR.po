@@ -5,8 +5,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: JobAffinity CPT Manager 1.4.0\n"
 "Report-Msgid-Bugs-To: https://github.com/quentinnicolet/jobaffinity-cpt-manager/issues\n"
-"POT-Creation-Date: 2026-09-16 09:57+0000\n"
-"PO-Revision-Date: 2026-09-16 09:57+0000\n"
+"POT-Creation-Date: 2026-09-16 10:15+0000\n"
+"PO-Revision-Date: 2026-09-16 10:15+0000\n"
 "Last-Translator: JobAffinity <contact@jobaffinity.fr>\n"
 "Language-Team: French <fr@li.org>\n"
 "Language: fr_FR\n"
@@ -85,7 +85,7 @@ msgstr "Base de route API REST"
 msgid "Empty = same as the post type key."
 msgstr "Vide = identique à la clé du CPT."
 
-#. translators: %s: URL de l'endpoint REST
+#. translators: %s: the REST endpoint URL
 #: includes/class-ccptm-admin.php:129
 #, php-format
 msgid "Current endpoint: %s"
@@ -115,7 +115,7 @@ msgstr "Vide = singulier + \"s\"."
 msgid "Menu icon"
 msgstr "Icône du menu"
 
-#. translators: %s: lien vers la liste des dashicons
+#. translators: %s: link to the Dashicons list
 #: includes/class-ccptm-admin.php:191
 #, php-format
 msgid "Name of a WordPress Dashicon. See the full list at %s."
@@ -153,7 +153,7 @@ msgstr "Laissez décoché pour tester les deux endpoints séparément."
 msgid "JobAffinity fields (required)"
 msgstr "Champs JobAffinity (obligatoires)"
 
-#. translators: %d: nombre de clés du socle
+#. translators: %d: number of required keys
 #: includes/class-ccptm-admin.php:250
 #, php-format
 msgid "%d keys are always declared:"
@@ -215,7 +215,7 @@ msgstr "Informations API REST"
 msgid "Your post type endpoint:"
 msgstr "Endpoint de votre CPT :"
 
-#. translators: 1: clé du CPT, 2: base de route REST
+#. translators: 1: post type key, 2: REST route base
 #: includes/class-ccptm-admin.php:340
 #, php-format
 msgid "The post type key (%1$s) and the REST route base (%2$s) differ on purpose."
@@ -241,13 +241,13 @@ msgstr "Authentification requise (Application Password, JWT, ou cookie nonce). L
 msgid "Currently declared fields"
 msgstr "Champs actuellement déclarés"
 
-#. translators: 1: total des clés, 2: clés du socle, 3: clés supplémentaires
+#. translators: 1: total number of keys, 2: required keys, 3: additional keys
 #: includes/class-ccptm-admin.php:380
 #, php-format
 msgid "%1$d keys (%2$d required + %3$d additional), declared on:"
 msgstr "%1$d clés (%2$d obligatoires + %3$d supplémentaires), déclarées sur :"
 
-#. translators: %s: commande de vérification
+#. translators: %s: the command to run
 #: includes/class-ccptm-admin.php:393
 #, php-format
 msgid "To check what the API actually exposes: %s"
@@ -349,7 +349,7 @@ msgstr "Archives des %s"
 msgid "%s attributes"
 msgstr "Attributs du %s"
 
-#. translators: %s: clé du champ personnalisé
+#. translators: %s: the custom field key
 #: includes/class-ccptm-meta.php:240
 #, php-format
 msgid "Custom field \"%s\", declared by JobAffinity CPT Manager."
@@ -375,35 +375,35 @@ msgstr "Vous n'avez pas la permission de modifier ce post."
 msgid "The post type key is required and must be 1 to 20 lowercase alphanumeric characters. Hyphens and underscores are allowed."
 msgstr "La clé du CPT est obligatoire et doit contenir entre 1 et 20 caractères alphanumériques en minuscules (tirets et underscores autorisés)."
 
-#. translators: %s: clé choisie
+#. translators: %s: the key that was entered
 #: includes/class-ccptm-settings.php:86
 #, php-format
 msgid "The key \"%s\" is reserved by WordPress. Please choose another value."
 msgstr "La clé \"%s\" est réservée par WordPress. Choisissez une autre valeur."
 
-#. translators: %s: base de route choisie
+#. translators: %s: the route base that was entered
 #: includes/class-ccptm-settings.php:314
 #, php-format
 msgid "The REST route base \"%s\" is reserved by WordPress core. Please choose another value."
 msgstr "La base de route REST \"%s\" est reservee par le coeur de WordPress. Choisissez une autre valeur."
 
-#. translators: 1: base de route, 2: post type en conflit
+#. translators: 1: route base, 2: conflicting post type
 #: includes/class-ccptm-settings.php:335
 #, php-format
 msgid "The REST route base \"%1$s\" is already used by the \"%2$s\" post type."
 msgstr "La base de route REST \"%1$s\" est deja utilisee par le post type \"%2$s\"."
 
-#. translators: 1: base de route, 2: taxonomie en conflit
+#. translators: 1: route base, 2: conflicting taxonomy
 #: includes/class-ccptm-settings.php:357
 #, php-format
 msgid "The REST route base \"%1$s\" is already used by the \"%2$s\" taxonomy."
 msgstr "La base de route REST \"%1$s\" est deja utilisee par la taxonomie \"%2$s\"."
 
-#: jobaffinity-cpt-manager.php:140
+#: jobaffinity-cpt-manager.php:147
 msgid "JobAffinity CPT Manager: please configure the custom post type key. "
 msgstr "Custom CPT Manager : veuillez configurer la clé du Custom Post Type. "
 
-#: jobaffinity-cpt-manager.php:141
+#: jobaffinity-cpt-manager.php:148
 msgid "Open settings"
 
 msgstr "Ouvrir la configuration"
