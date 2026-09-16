@@ -24,7 +24,6 @@ class CCPTM_CPT {
 
 	private function __construct() {
 		add_action( 'init', array( $this, 'register_cpt' ), 5 );
-		add_filter( 'map_meta_cap', array( $this, 'map_meta_cap_for_roles' ), 10, 4 );
 	}
 
 	/**
@@ -109,18 +108,4 @@ class CCPTM_CPT {
 		register_post_type( $key, $args );
 	}
 
-	/**
-	 * S'assure que les rôles administrator, editor, author ont bien
-	 * accès au CPT. Comme capability_type = 'post', c'est déjà le cas
-	 * par défaut, mais ce filtre sert de filet de sécurité si un plugin
-	 * tiers tente de restreindre l'accès.
-	 *
-	 * On n'accorde AUCUNE capacité supplémentaire aux rôles qui ne
-	 * possèdent pas déjà la capacité équivalente sur les posts natifs.
-	 */
-	public function map_meta_cap_for_roles( $caps, $cap, $user_id, $args ) {
-		// Pas d'intervention : on laisse WordPress gérer.
-		// (méthode conservée pour permettre une extension future sans modifier le bootstrap)
-		return $caps;
-	}
 }

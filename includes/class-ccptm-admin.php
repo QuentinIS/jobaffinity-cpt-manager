@@ -40,7 +40,8 @@ class CCPTM_Admin {
 		$settings = CCPTM_Settings::get();
 		$notices  = array();
 
-		if ( isset( $_GET['ccptm_updated'] ) && '1' === $_GET['ccptm_updated'] ) {
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Display-only flag set by our own wp_safe_redirect(); nothing is mutated here.
+		if ( isset( $_GET['ccptm_updated'] ) && '1' === sanitize_text_field( wp_unslash( $_GET['ccptm_updated'] ) ) ) {
 			$notices[] = array( 'type' => 'success', 'msg' => __( 'Réglages enregistrés.', 'custom-cpt-manager' ) );
 		}
 
@@ -382,7 +383,7 @@ class CCPTM_Admin {
 						count( CCPTM_Meta::get_extra_keys() )
 					);
 					?>
-					<code><?php echo esc_html( implode( '</code>, <code>', CCPTM_Meta::get_post_types() ) ); ?></code>
+					<code><?php echo implode( '</code>, <code>', array_map( 'esc_html', CCPTM_Meta::get_post_types() ) ); ?></code>
 				</p>
 				<p><code><?php echo esc_html( implode( ', ', $meta_keys ) ); ?></code></p>
 				<p class="description">
@@ -417,16 +418,18 @@ class CCPTM_Admin {
 		check_admin_referer( 'ccptm_save_settings', 'ccptm_nonce' );
 
 		$input = array(
-			'cpt_key'          => isset( $_POST['cpt_key'] )          ? wp_unslash( $_POST['cpt_key'] )   : '',
-			'singular'         => isset( $_POST['singular'] )         ? wp_unslash( $_POST['singular'] )  : '',
-			'plural'           => isset( $_POST['plural'] )           ? wp_unslash( $_POST['plural'] )    : '',
-			'menu_icon'        => isset( $_POST['menu_icon'] )        ? wp_unslash( $_POST['menu_icon'] ) : '',
+			'cpt_key'          => isset( $_POST['cpt_key'] )   ? sanitize_text_field( wp_unslash( $_POST['cpt_key'] ) )   : '',
+			'singular'         => isset( $_POST['singular'] )  ? sanitize_text_field( wp_unslash( $_POST['singular'] ) )  : '',
+			'plural'           => isset( $_POST['plural'] )    ? sanitize_text_field( wp_unslash( $_POST['plural'] ) )    : '',
+			'menu_icon'        => isset( $_POST['menu_icon'] ) ? sanitize_text_field( wp_unslash( $_POST['menu_icon'] ) ) : '',
 			'intercept_xmlrpc' => isset( $_POST['intercept_xmlrpc'] ) ? '1' : '',
 			'intercept_rest'   => isset( $_POST['intercept_rest'] )   ? '1' : '',
-			'rest_base'        => isset( $_POST['rest_base'] )        ? wp_unslash( $_POST['rest_base'] ) : '',
+			'rest_base'        => isset( $_POST['rest_base'] ) ? sanitize_text_field( wp_unslash( $_POST['rest_base'] ) ) : '',
 			// wp_unslash avant le découpage : sanitize_key mangerait les
-			// antislashs ajoutés par WordPress.
-			'extra_meta_keys'  => isset( $_POST['extra_meta_keys'] )  ? wp_unslash( $_POST['extra_meta_keys'] ) : '',
+			// antislashs ajoutés par WordPress. sanitize_textarea_field (et non
+			// sanitize_text_field) pour préserver les retours à la ligne qui
+			// séparent les clés.
+			'extra_meta_keys'  => isset( $_POST['extra_meta_keys'] ) ? sanitize_textarea_field( wp_unslash( $_POST['extra_meta_keys'] ) ) : '',
 			'register_meta_on_post' => isset( $_POST['register_meta_on_post'] ) ? '1' : '',
 		);
 
