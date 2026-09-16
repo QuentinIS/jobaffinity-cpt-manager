@@ -1,6 +1,6 @@
 <?php
 if ( ! defined( 'ABSPATH' ) ) {
-    exit;
+	exit;
 }
 
 /**
@@ -13,114 +13,114 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class CCPTM_CPT {
 
-    private static $instance = null;
+	private static $instance = null;
 
-    public static function instance() {
-        if ( null === self::$instance ) {
-            self::$instance = new self();
-        }
-        return self::$instance;
-    }
+	public static function instance() {
+		if ( null === self::$instance ) {
+			self::$instance = new self();
+		}
+		return self::$instance;
+	}
 
-    private function __construct() {
-        add_action( 'init', array( $this, 'register_cpt' ), 5 );
-        add_filter( 'map_meta_cap', array( $this, 'map_meta_cap_for_roles' ), 10, 4 );
-    }
+	private function __construct() {
+		add_action( 'init', array( $this, 'register_cpt' ), 5 );
+		add_filter( 'map_meta_cap', array( $this, 'map_meta_cap_for_roles' ), 10, 4 );
+	}
 
-    /**
-     * Enregistre le CPT si une clé est configurée.
-     */
-    public function register_cpt() {
-        $settings = CCPTM_Settings::get();
-        $key      = $settings['cpt_key'];
+	/**
+	 * Enregistre le CPT si une clé est configurée.
+	 */
+	public function register_cpt() {
+		$settings = CCPTM_Settings::get();
+		$key      = $settings['cpt_key'];
 
-        if ( empty( $key ) ) {
-            return;
-        }
+		if ( empty( $key ) ) {
+			return;
+		}
 
-        $singular = ! empty( $settings['singular'] ) ? $settings['singular'] : ucfirst( $key );
-        $plural   = ! empty( $settings['plural'] )   ? $settings['plural']   : $singular . 's';
+		$singular = ! empty( $settings['singular'] ) ? $settings['singular'] : ucfirst( $key );
+		$plural   = ! empty( $settings['plural'] )   ? $settings['plural']   : $singular . 's';
 
-        $labels = array(
-            'name'                  => $plural,
-            'singular_name'         => $singular,
-            'menu_name'             => $plural,
-            'name_admin_bar'        => $singular,
-            'add_new'               => __( 'Ajouter', 'custom-cpt-manager' ),
-            'add_new_item'          => sprintf( __( 'Ajouter un nouveau %s', 'custom-cpt-manager' ), $singular ),
-            'new_item'              => sprintf( __( 'Nouveau %s', 'custom-cpt-manager' ), $singular ),
-            'edit_item'             => sprintf( __( 'Modifier %s', 'custom-cpt-manager' ), $singular ),
-            'view_item'             => sprintf( __( 'Voir %s', 'custom-cpt-manager' ), $singular ),
-            'all_items'             => sprintf( __( 'Tous les %s', 'custom-cpt-manager' ), $plural ),
-            'search_items'          => sprintf( __( 'Rechercher des %s', 'custom-cpt-manager' ), $plural ),
-            'not_found'             => sprintf( __( 'Aucun %s trouvé.', 'custom-cpt-manager' ), $singular ),
-            'not_found_in_trash'    => sprintf( __( 'Aucun %s dans la corbeille.', 'custom-cpt-manager' ), $singular ),
-            'featured_image'        => __( 'Image mise en avant', 'custom-cpt-manager' ),
-            'set_featured_image'    => __( 'Définir l\'image mise en avant', 'custom-cpt-manager' ),
-            'remove_featured_image' => __( 'Retirer l\'image mise en avant', 'custom-cpt-manager' ),
-            'use_featured_image'    => __( 'Utiliser comme image mise en avant', 'custom-cpt-manager' ),
-            'archives'              => sprintf( __( 'Archives des %s', 'custom-cpt-manager' ), $plural ),
-            'attributes'            => sprintf( __( 'Attributs du %s', 'custom-cpt-manager' ), $singular ),
-        );
+		$labels = array(
+			'name'                  => $plural,
+			'singular_name'         => $singular,
+			'menu_name'             => $plural,
+			'name_admin_bar'        => $singular,
+			'add_new'               => __( 'Ajouter', 'custom-cpt-manager' ),
+			'add_new_item'          => sprintf( __( 'Ajouter un nouveau %s', 'custom-cpt-manager' ), $singular ),
+			'new_item'              => sprintf( __( 'Nouveau %s', 'custom-cpt-manager' ), $singular ),
+			'edit_item'             => sprintf( __( 'Modifier %s', 'custom-cpt-manager' ), $singular ),
+			'view_item'             => sprintf( __( 'Voir %s', 'custom-cpt-manager' ), $singular ),
+			'all_items'             => sprintf( __( 'Tous les %s', 'custom-cpt-manager' ), $plural ),
+			'search_items'          => sprintf( __( 'Rechercher des %s', 'custom-cpt-manager' ), $plural ),
+			'not_found'             => sprintf( __( 'Aucun %s trouvé.', 'custom-cpt-manager' ), $singular ),
+			'not_found_in_trash'    => sprintf( __( 'Aucun %s dans la corbeille.', 'custom-cpt-manager' ), $singular ),
+			'featured_image'        => __( 'Image mise en avant', 'custom-cpt-manager' ),
+			'set_featured_image'    => __( 'Définir l\'image mise en avant', 'custom-cpt-manager' ),
+			'remove_featured_image' => __( 'Retirer l\'image mise en avant', 'custom-cpt-manager' ),
+			'use_featured_image'    => __( 'Utiliser comme image mise en avant', 'custom-cpt-manager' ),
+			'archives'              => sprintf( __( 'Archives des %s', 'custom-cpt-manager' ), $plural ),
+			'attributes'            => sprintf( __( 'Attributs du %s', 'custom-cpt-manager' ), $singular ),
+		);
 
-        $args = array(
-            'labels'              => $labels,
-            'public'              => true,
-            'publicly_queryable'  => true,
-            'show_ui'             => true,
-            'show_in_menu'        => true,
-            'show_in_nav_menus'   => true,
-            'show_in_admin_bar'   => true,
-            'show_in_rest'        => true,
-            // Base de route REST découplée de la clé : permet d'exposer
-            // /wp/v2/offer même si le CPT s'appelle "offer-intern".
-            // Vide dans les réglages = repli sur la clé du CPT.
-            'rest_base'           => CCPTM_Settings::get_rest_base(),
-            'rest_controller_class' => 'WP_REST_Posts_Controller',
-            'menu_position'       => 20,
-            'menu_icon'           => $settings['menu_icon'],
-            'capability_type'     => 'post', // on réutilise les caps de 'post' => éditeurs/auteurs/admins
-            'map_meta_cap'        => true,
-            'hierarchical'        => false,
-            'supports'            => array(
-                'title',
-                'editor',
-                'author',
-                'thumbnail',
-                'excerpt',
-                'trackbacks',
-                'custom-fields', // essentiel pour les champs personnalisés via l'API REST
-                'comments',
-                'revisions',
-                'page-attributes',
-                'post-formats',
-            ),
-            'taxonomies'          => array( 'category', 'post_tag' ),
-            'has_archive'         => true,
-            'rewrite'             => array(
-                'slug'       => $key,
-                'with_front' => false,
-            ),
-            'query_var'           => true,
-            'can_export'          => true,
-            'delete_with_user'    => false,
-        );
+		$args = array(
+			'labels'              => $labels,
+			'public'              => true,
+			'publicly_queryable'  => true,
+			'show_ui'             => true,
+			'show_in_menu'        => true,
+			'show_in_nav_menus'   => true,
+			'show_in_admin_bar'   => true,
+			'show_in_rest'        => true,
+			// Base de route REST découplée de la clé : permet d'exposer
+			// /wp/v2/offer même si le CPT s'appelle "offer-intern".
+			// Vide dans les réglages = repli sur la clé du CPT.
+			'rest_base'           => CCPTM_Settings::get_rest_base(),
+			'rest_controller_class' => 'WP_REST_Posts_Controller',
+			'menu_position'       => 20,
+			'menu_icon'           => $settings['menu_icon'],
+			'capability_type'     => 'post', // on réutilise les caps de 'post' => éditeurs/auteurs/admins
+			'map_meta_cap'        => true,
+			'hierarchical'        => false,
+			'supports'            => array(
+				'title',
+				'editor',
+				'author',
+				'thumbnail',
+				'excerpt',
+				'trackbacks',
+				'custom-fields', // essentiel pour les champs personnalisés via l'API REST
+				'comments',
+				'revisions',
+				'page-attributes',
+				'post-formats',
+			),
+			'taxonomies'          => array( 'category', 'post_tag' ),
+			'has_archive'         => true,
+			'rewrite'             => array(
+				'slug'       => $key,
+				'with_front' => false,
+			),
+			'query_var'           => true,
+			'can_export'          => true,
+			'delete_with_user'    => false,
+		);
 
-        register_post_type( $key, $args );
-    }
+		register_post_type( $key, $args );
+	}
 
-    /**
-     * S'assure que les rôles administrator, editor, author ont bien
-     * accès au CPT. Comme capability_type = 'post', c'est déjà le cas
-     * par défaut, mais ce filtre sert de filet de sécurité si un plugin
-     * tiers tente de restreindre l'accès.
-     *
-     * On n'accorde AUCUNE capacité supplémentaire aux rôles qui ne
-     * possèdent pas déjà la capacité équivalente sur les posts natifs.
-     */
-    public function map_meta_cap_for_roles( $caps, $cap, $user_id, $args ) {
-        // Pas d'intervention : on laisse WordPress gérer.
-        // (méthode conservée pour permettre une extension future sans modifier le bootstrap)
-        return $caps;
-    }
+	/**
+	 * S'assure que les rôles administrator, editor, author ont bien
+	 * accès au CPT. Comme capability_type = 'post', c'est déjà le cas
+	 * par défaut, mais ce filtre sert de filet de sécurité si un plugin
+	 * tiers tente de restreindre l'accès.
+	 *
+	 * On n'accorde AUCUNE capacité supplémentaire aux rôles qui ne
+	 * possèdent pas déjà la capacité équivalente sur les posts natifs.
+	 */
+	public function map_meta_cap_for_roles( $caps, $cap, $user_id, $args ) {
+		// Pas d'intervention : on laisse WordPress gérer.
+		// (méthode conservée pour permettre une extension future sans modifier le bootstrap)
+		return $caps;
+	}
 }
