@@ -183,6 +183,31 @@ docker run --rm -v "$PWD":/app -w /app php:8.2-cli \
 Coding standards (`phpcs.xml.dist`) and the WordPress Plugin Check run in CI;
 see `.github/workflows/lint.yml`.
 
+### Running Plugin Check correctly
+
+This repository **is** the plugin: the working copy sits in
+`wp-content/plugins/` and is bind-mounted into the container, so editing the
+repository edits the running plugin. The consequence is that running Plugin
+Check from the WordPress admin inspects the working copy, development files
+included, and reports `hidden_files` on `.gitignore`, `application_detected` on
+`phpcs.xml.dist`, and so on. None of those files ship: `.distignore` strips
+them.
+
+Check what actually ships, from the repository root:
+
+```bash
+# Build the distribution tree, exactly as the deploy action does
+rsync -a --exclude-from=.distignore ./ /tmp/build/jobaffinity-cpt-manager/
+
+# Then point Plugin Check at it. --slug matters: without it the check derives
+# the expected text domain from the directory name.
+wp plugin check /tmp/build/jobaffinity-cpt-manager/jobaffinity-cpt-manager.php \
+  --slug=jobaffinity-cpt-manager
+```
+
+The `lint.yml` workflow does the same on every push, so a green CI run is the
+authoritative answer.
+
 ## Releasing
 
 The two wordpress.org workflows are gated on a repository variable and do
