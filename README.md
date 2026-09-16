@@ -1,6 +1,6 @@
 # JobAffinity CPT Manager
 
-[![Lint](https://github.com/quentinnicolet/jobaffinity-cpt-manager/actions/workflows/lint.yml/badge.svg)](https://github.com/quentinnicolet/jobaffinity-cpt-manager/actions/workflows/lint.yml)
+[![Lint](https://github.com/QuentinIS/jobaffinity-cpt-manager/actions/workflows/lint.yml/badge.svg)](https://github.com/QuentinIS/jobaffinity-cpt-manager/actions/workflows/lint.yml)
 
 WordPress plugin that gives JobAffinity job offers a custom post type of their
 own instead of mixing them into Posts, and exposes every field JobAffinity

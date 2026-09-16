@@ -1,7 +1,7 @@
 <?php
 /**
  * Plugin Name:       JobAffinity CPT Manager
- * Plugin URI:        https://github.com/quentinnicolet/jobaffinity-cpt-manager
+ * Plugin URI:        https://github.com/QuentinIS/jobaffinity-cpt-manager
  * Description:       Receives job offers pushed by JobAffinity over the REST API or XML-RPC into a dedicated custom post type, with full custom field support.
  * Version:           1.4.0
  * Requires at least: 5.6

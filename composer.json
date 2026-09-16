@@ -1,5 +1,5 @@
 {
-  "name": "quentinnicolet/jobaffinity-cpt-manager",
+  "name": "quentinis/jobaffinity-cpt-manager",
   "description": "Development tooling for the JobAffinity CPT Manager WordPress plugin.",
   "type": "wordpress-plugin",
   "license": "GPL-2.0-or-later",

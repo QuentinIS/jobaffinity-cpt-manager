@@ -39,7 +39,7 @@ This matters because WordPress silently ignores undeclared keys inside `meta`: t
 * `ccptm_meta_post_types` — the post types those keys are declared on.
 * `ccptm_sanitize_meta_value` — the sanitisation applied to an incoming value.
 
-Source code and issue tracker: [github.com/quentinnicolet/jobaffinity-cpt-manager](https://github.com/quentinnicolet/jobaffinity-cpt-manager)
+Source code and issue tracker: [github.com/QuentinIS/jobaffinity-cpt-manager](https://github.com/QuentinIS/jobaffinity-cpt-manager)
 
 == Installation ==
 
