@@ -80,6 +80,13 @@ register_deactivation_hook( __FILE__, 'ccptm_deactivate' );
 /**
  * Charge les traductions livrées dans /languages.
  *
+ * Le Plugin Check signale load_plugin_textdomain() comme superflu depuis
+ * WordPress 4.6, ce qui n'est vrai que pour les catalogues téléchargés dans
+ * WP_LANG_DIR/plugins/. Le chargement automatique d'un dossier /languages
+ * embarqué, via l'en-tête Domain Path, n'existe que depuis WordPress 6.2 ;
+ * comme le plugin annonce "Requires at least: 5.6" et livre sa propre
+ * traduction française, l'appel reste nécessaire.
+ *
  * Sur "init" priorité 0 et non "plugins_loaded" : depuis WordPress 6.7,
  * charger un text domain avant "init" déclenche une notice
  * _load_textdomain_just_in_time. La priorité 0 passe malgré tout devant
