@@ -1,0 +1,30 @@
+# Version control and CI
+/.git
+/.github
+/.gitignore
+/.gitattributes
+/.distignore
+/.editorconfig
+
+# wordpress.org assets live in SVN /assets, never in the plugin zip
+/.wordpress-org
+
+# Development dependencies and tooling
+/node_modules
+/vendor
+/tests
+/bin
+composer.json
+composer.lock
+package.json
+package-lock.json
+phpcs.xml.dist
+phpunit.xml.dist
+
+# Developer documentation; readme.txt is the user-facing one
+README.md
+CONTRIBUTING.md
+INTEGRATION-JOBAFFINITY.md
+
+# OS noise
+.DS_Store

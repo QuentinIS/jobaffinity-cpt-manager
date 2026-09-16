@@ -1,0 +1,28 @@
+name: Update WordPress.org assets and readme
+
+# wordpress.org reads Tested up to, Requires at least, Contributors and Tags
+# from trunk, not from the stable tag. Pushing trunk therefore lets us bump
+# compatibility or fix the description without cutting a release.
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - '.wordpress-org/**'
+      - 'readme.txt'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  trunk:
+    name: Push assets and readme to WordPress.org
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: 10up/action-wordpress-plugin-asset-update@stable
+        env:
+          SVN_USERNAME: ${{ secrets.SVN_USERNAME }}
+          SVN_PASSWORD: ${{ secrets.SVN_PASSWORD }}
+          SLUG: jobaffinity-cpt-manager

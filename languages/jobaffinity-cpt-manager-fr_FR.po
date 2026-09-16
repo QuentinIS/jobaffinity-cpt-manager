@@ -1,0 +1,409 @@
+# French translation of JobAffinity CPT Manager.
+# Copyright (C) 2026 JobAffinity
+# This file is distributed under the same license as the JobAffinity CPT Manager plugin.
+msgid ""
+msgstr ""
+"Project-Id-Version: JobAffinity CPT Manager 1.4.0\n"
+"Report-Msgid-Bugs-To: https://github.com/quentinnicolet/jobaffinity-cpt-manager/issues\n"
+"POT-Creation-Date: 2026-09-16 10:15+0000\n"
+"PO-Revision-Date: 2026-09-16 10:15+0000\n"
+"Last-Translator: JobAffinity <contact@jobaffinity.fr>\n"
+"Language-Team: French <fr@li.org>\n"
+"Language: fr_FR\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"X-Domain: jobaffinity-cpt-manager\n"
+
+#. Plugin Name of the plugin
+#: jobaffinity-cpt-manager.php
+#: includes/class-ccptm-admin.php:27
+#: includes/class-ccptm-admin.php:28
+#: includes/class-ccptm-admin.php:59
+msgid "JobAffinity CPT Manager"
+msgstr "JobAffinity CPT Manager"
+
+#. Plugin URI of the plugin
+#: jobaffinity-cpt-manager.php
+msgid "https://github.com/quentinnicolet/jobaffinity-cpt-manager"
+msgstr ""
+
+#. Description of the plugin
+#: jobaffinity-cpt-manager.php
+msgid "Receives job offers pushed by JobAffinity over the REST API or XML-RPC into a dedicated custom post type, with full custom field support."
+msgstr "Reçoit dans un Custom Post Type dédié les offres publiées par JobAffinity en REST ou XML-RPC, avec prise en charge complète des champs personnalisés."
+
+#. Author of the plugin
+#: jobaffinity-cpt-manager.php
+msgid "JobAffinity"
+msgstr ""
+
+#. Author URI of the plugin
+#: jobaffinity-cpt-manager.php
+msgid "https://jobaffinity.fr"
+msgstr ""
+
+#: includes/class-ccptm-admin.php:37
+#: includes/class-ccptm-admin.php:415
+msgid "Access denied."
+msgstr "Accès refusé."
+
+#: includes/class-ccptm-admin.php:45
+msgid "Settings saved."
+msgstr "Réglages enregistrés."
+
+#: includes/class-ccptm-admin.php:68
+msgid "Set the key for your custom post type. The key is used as the internal identifier, as the URL slug and as the route base in the REST API."
+msgstr "Configurez la clé de votre Custom Post Type. Cette clé est utilisée comme identifiant interne, comme slug d'URL et comme base de route dans l'API REST."
+
+#: includes/class-ccptm-admin.php:73
+msgid "First run:"
+msgstr "Première installation :"
+
+#: includes/class-ccptm-admin.php:74
+msgid "Pick your post type key (for example \"offer\") and save. A dedicated menu then appears in the admin."
+msgstr "Choisissez la clé de votre CPT (ex : \"offer\") puis enregistrez. Un menu dédié apparaîtra dans l'administration."
+
+#: includes/class-ccptm-admin.php:87
+msgid "Post type key"
+msgstr "Clé du CPT"
+
+#: includes/class-ccptm-admin.php:102
+msgid "Lowercase letters, digits, hyphens and underscores (20 characters max). For example \"offer\"."
+msgstr "Lettres minuscules, chiffres, tirets et underscores (20 caractères max). Exemple : \"offer\"."
+
+#: includes/class-ccptm-admin.php:103
+msgid "Careful: changing the key once content exists will change its URLs and break existing references."
+msgstr "Attention : modifier la clé après création de contenus changera les URLs et cassera les références existantes."
+
+#: includes/class-ccptm-admin.php:110
+msgid "REST API route base"
+msgstr "Base de route API REST"
+
+#: includes/class-ccptm-admin.php:124
+msgid "Empty = same as the post type key."
+msgstr "Vide = identique à la clé du CPT."
+
+#. translators: %s: the REST endpoint URL
+#: includes/class-ccptm-admin.php:129
+#, php-format
+msgid "Current endpoint: %s"
+msgstr "Endpoint actuel : %s"
+
+#: includes/class-ccptm-admin.php:135
+msgid "Lets you expose /wp/v2/offer even when the post type key is \"offer-intern\". Public site URLs are unaffected."
+msgstr "Permet d'exposer /wp/v2/offer même si la clé du CPT est \"offer-intern\". N'affecte pas les URLs publiques du site."
+
+#: includes/class-ccptm-admin.php:142
+msgid "Singular label"
+msgstr "Libellé singulier"
+
+#: includes/class-ccptm-admin.php:153
+msgid "Empty = derived from the key."
+msgstr "Vide = déduit automatiquement depuis la clé."
+
+#: includes/class-ccptm-admin.php:159
+msgid "Plural label"
+msgstr "Libellé pluriel"
+
+#: includes/class-ccptm-admin.php:170
+msgid "Empty = singular + \"s\"."
+msgstr "Vide = singulier + \"s\"."
+
+#: includes/class-ccptm-admin.php:176
+msgid "Menu icon"
+msgstr "Icône du menu"
+
+#. translators: %s: link to the Dashicons list
+#: includes/class-ccptm-admin.php:191
+#, php-format
+msgid "Name of a WordPress Dashicon. See the full list at %s."
+msgstr "Nom d'une Dashicon WordPress. Voir la liste sur %s."
+
+#: includes/class-ccptm-admin.php:201
+msgid "XML-RPC interception"
+msgstr "Interception XML-RPC"
+
+#: includes/class-ccptm-admin.php:212
+msgid "Automatically route JobAffinity posts sent over XML-RPC to this post type"
+msgstr "Rediriger automatiquement les publications JobAffinity (XML-RPC) vers ce CPT"
+
+#: includes/class-ccptm-admin.php:215
+msgid "JobAffinity publishes over XML-RPC to the \"post\" post type by default. This option detects JobAffinity offers, by the presence of job_id in the custom fields, and routes them to your post type instead of the Posts list."
+msgstr "JobAffinity publie en XML-RPC vers le post type \"post\" par défaut. Cette option détecte les offres JobAffinity (via la présence de job_id dans les custom fields) et les redirige vers votre CPT au lieu d'atterrir dans les Articles."
+
+#: includes/class-ccptm-admin.php:221
+msgid "REST API interception"
+msgstr "Interception API REST"
+
+#: includes/class-ccptm-admin.php:232
+msgid "Route offers created through POST /wp/v2/posts to this post type"
+msgstr "Rediriger vers ce CPT les offres créées via POST /wp/v2/posts"
+
+#: includes/class-ccptm-admin.php:235
+msgid "The REST counterpart of the XML-RPC option above: it detects JobAffinity offers, by the presence of job_id, posted to the native posts endpoint and moves them to your post type. It applies to creation only, never to an update of an existing post."
+msgstr "Équivalent REST de l'option XML-RPC ci-dessus : détecte les offres JobAffinity (présence de job_id) postées sur l'endpoint des articles natifs et les bascule vers votre CPT. Ne s'applique qu'à la création, jamais à la mise à jour d'un article existant."
+
+#: includes/class-ccptm-admin.php:236
+msgid "Leave unchecked to test both endpoints separately."
+msgstr "Laissez décoché pour tester les deux endpoints séparément."
+
+#: includes/class-ccptm-admin.php:243
+msgid "JobAffinity fields (required)"
+msgstr "Champs JobAffinity (obligatoires)"
+
+#. translators: %d: number of required keys
+#: includes/class-ccptm-admin.php:250
+#, php-format
+msgid "%d keys are always declared:"
+msgstr "%d clés déclarées en permanence :"
+
+#: includes/class-ccptm-admin.php:257
+msgid "Required by JobAffinity:"
+msgstr "Socle requis par JobAffinity :"
+
+#: includes/class-ccptm-admin.php:258
+msgid "these keys cannot be removed. Adding fields below does not replace them."
+msgstr "ces clés ne peuvent pas être retirées. Ajouter des champs ci-dessous ne les remplace pas."
+
+#: includes/class-ccptm-admin.php:265
+msgid "Additional fields"
+msgstr "Champs supplémentaires"
+
+#: includes/class-ccptm-admin.php:276
+msgid "One key per line. These are added to the required set above: they are declared through register_post_meta() and become usable in the standard \"meta\" object of the REST API."
+msgstr "Une clé par ligne. Ces clés s'ajoutent au socle ci-dessus : elles sont déclarées via register_post_meta() et deviennent utilisables dans l'objet \"meta\" standard de l'API REST."
+
+#: includes/class-ccptm-admin.php:277
+msgid "Important:"
+msgstr "Important :"
+
+#: includes/class-ccptm-admin.php:278
+msgid "WordPress silently ignores any undeclared key inside \"meta\": the request still answers 201, but the field is lost. An undeclared key remains usable through \"custom_fields\" (custom_regions, for example)."
+msgstr "WordPress ignore silencieusement, dans \"meta\", toute clé non déclarée — la requête répond 201 mais le champ est perdu. Une clé absente reste utilisable via \"custom_fields\" (ex. custom_regions)."
+
+#: includes/class-ccptm-admin.php:279
+msgid "Accepted format: lowercase letters, digits, hyphens and underscores. Uppercase is folded and any other character is dropped, so \"My.Field\" becomes \"myfield\". A key starting with an underscore is rejected."
+msgstr "Format accepté : minuscules, chiffres, tirets et underscores. Les majuscules sont converties et les autres caractères supprimés (« Mon.Champ » devient « monchamp »). Une clé commençant par un underscore est refusée."
+
+#: includes/class-ccptm-admin.php:280
+msgid "Re-entering a required key here does nothing: the duplicate is dropped. Removing a key from this list does not erase values already stored in the database, the key simply stops being accepted in \"meta\"."
+msgstr "Ressaisir une clé du socle ici est sans effet : le doublon est retiré. Retirer une clé de cette liste n'efface pas les valeurs déjà enregistrées en base — la clé cesse simplement d'être acceptée dans \"meta\"."
+
+#: includes/class-ccptm-admin.php:287
+msgid "Native posts"
+msgstr "Articles natifs"
+
+#: includes/class-ccptm-admin.php:298
+msgid "Declare these keys on the \"post\" post type as well"
+msgstr "Déclarer aussi ces clés sur le post type « post »"
+
+#: includes/class-ccptm-admin.php:301
+msgid "Required to publish offers with \"meta\" on /wp/v2/posts. The trade-off: every /wp/v2/posts response then carries the \"meta\" object with these keys, empty on ordinary posts, and they show up in the block editor. Uncheck if you only publish to the custom post type."
+msgstr "Nécessaire pour publier des offres avec \"meta\" sur /wp/v2/posts. Contrepartie : chaque réponse de /wp/v2/posts embarque alors l'objet \"meta\" avec ces clés (vides sur les articles ordinaires), et elles apparaissent dans l'éditeur de blocs. Décochez si vous ne publiez que sur le CPT."
+
+#: includes/class-ccptm-admin.php:309
+msgid "Save settings"
+msgstr "Enregistrer les réglages"
+
+#: includes/class-ccptm-admin.php:314
+msgid "REST API reference"
+msgstr "Informations API REST"
+
+#: includes/class-ccptm-admin.php:331
+msgid "Your post type endpoint:"
+msgstr "Endpoint de votre CPT :"
+
+#. translators: 1: post type key, 2: REST route base
+#: includes/class-ccptm-admin.php:340
+#, php-format
+msgid "The post type key (%1$s) and the REST route base (%2$s) differ on purpose."
+msgstr "La clé du CPT (%1$s) et la base de route REST (%2$s) sont volontairement différentes."
+
+#: includes/class-ccptm-admin.php:348
+msgid "Creating an offer: the \"meta\" object (recommended)"
+msgstr "Créer une offre : objet « meta » (recommandé)"
+
+#: includes/class-ccptm-admin.php:350
+msgid "The standard WordPress REST API channel. It only works for the keys declared above: the JobAffinity set and your additional fields."
+msgstr "Canal standard de l'API REST WordPress. Ne fonctionne que pour les clés déclarées ci-dessus : le socle JobAffinity et vos champs supplémentaires."
+
+#: includes/class-ccptm-admin.php:369
+msgid "Declared keys go through \"meta\"; free-form, multi-valued or null-deleted keys go through \"custom_fields\". If the same key arrives through both, the \"custom_fields\" value wins."
+msgstr "Les clés déclarées passent par \"meta\" ; les clés libres, multivaluées, ou supprimées par null passent par \"custom_fields\". Si une même clé arrive par les deux, c'est la valeur de \"custom_fields\" qui est conservée."
+
+#: includes/class-ccptm-admin.php:372
+msgid "Authentication is required: application password, JWT or cookie nonce. The user must have editing rights on the post type."
+msgstr "Authentification requise (Application Password, JWT, ou cookie nonce). L'utilisateur doit avoir les droits d'édition sur le post type."
+
+#: includes/class-ccptm-admin.php:375
+msgid "Currently declared fields"
+msgstr "Champs actuellement déclarés"
+
+#. translators: 1: total number of keys, 2: required keys, 3: additional keys
+#: includes/class-ccptm-admin.php:380
+#, php-format
+msgid "%1$d keys (%2$d required + %3$d additional), declared on:"
+msgstr "%1$d clés (%2$d obligatoires + %3$d supplémentaires), déclarées sur :"
+
+#. translators: %s: the command to run
+#: includes/class-ccptm-admin.php:393
+#, php-format
+msgid "To check what the API actually exposes: %s"
+msgstr "Pour vérifier ce que l'API expose réellement : %s"
+
+#: includes/class-ccptm-admin.php:399
+msgid "Roles allowed to manage the post type"
+msgstr "Rôles autorisés à gérer le CPT"
+
+#: includes/class-ccptm-admin.php:401
+msgid "Administrator: full access."
+msgstr "Administrateur : accès complet."
+
+#: includes/class-ccptm-admin.php:402
+msgid "Editor: create, edit and publish all content."
+msgstr "Éditeur : créer, modifier et publier tous les contenus."
+
+#: includes/class-ccptm-admin.php:403
+msgid "Author: create and manage their own content."
+msgstr "Auteur : créer et gérer ses propres contenus."
+
+#: includes/class-ccptm-cpt.php:48
+msgid "Add New"
+msgstr "Ajouter"
+
+#. translators: %s: singular post type label.
+#: includes/class-ccptm-cpt.php:50
+#, php-format
+msgid "Add new %s"
+msgstr "Ajouter un nouveau %s"
+
+#. translators: %s: singular post type label.
+#: includes/class-ccptm-cpt.php:52
+#, php-format
+msgid "New %s"
+msgstr "Nouveau %s"
+
+#. translators: %s: singular post type label.
+#: includes/class-ccptm-cpt.php:54
+#, php-format
+msgid "Edit %s"
+msgstr "Modifier %s"
+
+#. translators: %s: singular post type label.
+#: includes/class-ccptm-cpt.php:56
+#, php-format
+msgid "View %s"
+msgstr "Voir %s"
+
+#. translators: %s: plural post type label.
+#: includes/class-ccptm-cpt.php:58
+#, php-format
+msgid "All %s"
+msgstr "Tous les %s"
+
+#. translators: %s: plural post type label.
+#: includes/class-ccptm-cpt.php:60
+#, php-format
+msgid "Search %s"
+msgstr "Rechercher des %s"
+
+#. translators: %s: singular post type label.
+#: includes/class-ccptm-cpt.php:62
+#, php-format
+msgid "No %s found."
+msgstr "Aucun %s trouvé."
+
+#. translators: %s: singular post type label.
+#: includes/class-ccptm-cpt.php:64
+#, php-format
+msgid "No %s found in Trash."
+msgstr "Aucun %s dans la corbeille."
+
+#: includes/class-ccptm-cpt.php:65
+msgid "Featured image"
+msgstr "Image mise en avant"
+
+#: includes/class-ccptm-cpt.php:66
+msgid "Set featured image"
+msgstr "Définir l'image mise en avant"
+
+#: includes/class-ccptm-cpt.php:67
+msgid "Remove featured image"
+msgstr "Retirer l'image mise en avant"
+
+#: includes/class-ccptm-cpt.php:68
+msgid "Use as featured image"
+msgstr "Utiliser comme image mise en avant"
+
+#. translators: %s: plural post type label.
+#: includes/class-ccptm-cpt.php:70
+#, php-format
+msgid "%s archives"
+msgstr "Archives des %s"
+
+#. translators: %s: singular post type label.
+#: includes/class-ccptm-cpt.php:72
+#, php-format
+msgid "%s attributes"
+msgstr "Attributs du %s"
+
+#. translators: %s: the custom field key
+#: includes/class-ccptm-meta.php:240
+#, php-format
+msgid "Custom field \"%s\", declared by JobAffinity CPT Manager."
+msgstr "Champ personnalisé « %s », déclaré par Custom CPT Manager."
+
+#: includes/class-ccptm-rest.php:80
+msgid "Custom fields (meta) attached to the post."
+msgstr "Champs personnalisés (meta) associés au post."
+
+#: includes/class-ccptm-rest.php:96
+msgid "Write alias for custom_fields."
+msgstr "Alias d'écriture pour custom_fields."
+
+#: includes/class-ccptm-rest.php:150
+msgid "The field must be an object of key/value pairs."
+msgstr "Le champ doit être un objet de paires clé/valeur."
+
+#: includes/class-ccptm-rest.php:165
+msgid "You are not allowed to edit this post."
+msgstr "Vous n'avez pas la permission de modifier ce post."
+
+#: includes/class-ccptm-settings.php:78
+msgid "The post type key is required and must be 1 to 20 lowercase alphanumeric characters. Hyphens and underscores are allowed."
+msgstr "La clé du CPT est obligatoire et doit contenir entre 1 et 20 caractères alphanumériques en minuscules (tirets et underscores autorisés)."
+
+#. translators: %s: the key that was entered
+#: includes/class-ccptm-settings.php:86
+#, php-format
+msgid "The key \"%s\" is reserved by WordPress. Please choose another value."
+msgstr "La clé \"%s\" est réservée par WordPress. Choisissez une autre valeur."
+
+#. translators: %s: the route base that was entered
+#: includes/class-ccptm-settings.php:314
+#, php-format
+msgid "The REST route base \"%s\" is reserved by WordPress core. Please choose another value."
+msgstr "La base de route REST \"%s\" est reservee par le coeur de WordPress. Choisissez une autre valeur."
+
+#. translators: 1: route base, 2: conflicting post type
+#: includes/class-ccptm-settings.php:335
+#, php-format
+msgid "The REST route base \"%1$s\" is already used by the \"%2$s\" post type."
+msgstr "La base de route REST \"%1$s\" est deja utilisee par le post type \"%2$s\"."
+
+#. translators: 1: route base, 2: conflicting taxonomy
+#: includes/class-ccptm-settings.php:357
+#, php-format
+msgid "The REST route base \"%1$s\" is already used by the \"%2$s\" taxonomy."
+msgstr "La base de route REST \"%1$s\" est deja utilisee par la taxonomie \"%2$s\"."
+
+#: jobaffinity-cpt-manager.php:147
+msgid "JobAffinity CPT Manager: please configure the custom post type key. "
+msgstr "Custom CPT Manager : veuillez configurer la clé du Custom Post Type. "
+
+#: jobaffinity-cpt-manager.php:148
+msgid "Open settings"
+
+msgstr "Ouvrir la configuration"

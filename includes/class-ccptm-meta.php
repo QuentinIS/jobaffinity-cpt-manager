@@ -1,394 +1,394 @@
 <?php
 if ( ! defined( 'ABSPATH' ) ) {
-    exit;
+	exit;
 }
 
 /**
- * Déclaration des champs personnalisés auprès de l'API REST.
+ * Declaration of the custom fields to the REST API.
  *
- * Pourquoi cette classe existe :
- * l'objet "meta" standard de l'API REST WordPress refuse d'écrire une clé qui
- * n'a pas été déclarée côté serveur via register_post_meta() — et il la refuse
- * SANS erreur. On reçoit un 201 Created, le post est créé, et les champs sont
- * simplement absents. Le champ maison "custom_fields" (voir CCPTM_REST) n'a pas
- * cette contrainte, mais les clients qui utilisent l'API REST standard (dont
- * JobAffinity) envoient "meta".
+ * Why this class exists: the standard "meta" object of the WordPress REST API
+ * refuses to write a key that has not been declared server-side through
+ * register_post_meta(), and it refuses it WITHOUT an error. You get a 201
+ * Created, the post exists, and the fields are simply missing. The in-house
+ * "custom_fields" field (see CCPTM_REST) has no such constraint, but clients
+ * using the standard REST API, JobAffinity among them, send "meta".
  *
- * Cette classe déclare donc, sur le CPT et optionnellement sur le post type
- * natif "post", un socle obligatoire de clés JobAffinity (DEFAULT_KEYS) auquel
- * l'administrateur peut ajouter ses propres clés via les réglages. Le socle ne
- * peut pas être retiré : voir get_keys().
+ *
+ * So this class declares, on the custom post type and optionally on the native
+ * "post" type, a required set of JobAffinity keys (DEFAULT_KEYS) that the
+ * administrator can extend from the settings. The required set cannot be
+ * removed: see get_keys().
  */
 class CCPTM_Meta {
 
-    /**
-     * Socle obligatoire : les clés envoyées par JobAffinity sur toutes les
-     * offres. Toujours déclarées, quoi que contiennent les réglages.
-     *
-     * Toutes en "string", y compris les salaires et les coordonnées GPS :
-     * JobAffinity envoie tout en chaîne, et déclarer 'number' sur job_salary_min
-     * ferait rejeter l'offre entière avec une erreur rest_invalid_type.
-     */
-    const DEFAULT_KEYS = array(
-        'job_id',
-        'job_reference',
-        'job_organisation',
-        'job_client_remote_id',
-        'job_client',
-        'job_entity',
-        'job_location',
-        'job_address',
-        'job_postalcode',
-        'job_town',
-        'job_country',
-        'job_latitude',
-        'job_longitude',
-        'job_link',
-        'job_contract_type',
-        'job_contract_length',
-        'job_contract_length_unit',
-        'apply_url',
-        'job_salary_min',
-        'job_salary_max',
-        'job_salary_currency',
-        'job_salary_period',
-    );
+	/**
+	 * The required set: the keys JobAffinity sends on every offer. Always
+	 * declared, whatever the settings hold.
+	 *
+	 * All typed "string", salaries and GPS coordinates included: JobAffinity
+	 * sends everything as a string, and declaring 'number' on job_salary_min
+	 * would get the whole offer rejected with a rest_invalid_type error.
+	 */
+	const DEFAULT_KEYS = array(
+		'job_id',
+		'job_reference',
+		'job_organisation',
+		'job_client_remote_id',
+		'job_client',
+		'job_entity',
+		'job_location',
+		'job_address',
+		'job_postalcode',
+		'job_town',
+		'job_country',
+		'job_latitude',
+		'job_longitude',
+		'job_link',
+		'job_contract_type',
+		'job_contract_length',
+		'job_contract_length_unit',
+		'apply_url',
+		'job_salary_min',
+		'job_salary_max',
+		'job_salary_currency',
+		'job_salary_period',
+	);
 
-    /**
-     * Clés dont la valeur est une URL : sanitisées avec esc_url_raw.
-     */
-    const URL_KEYS = array( 'job_link', 'apply_url' );
+	/**
+	 * Keys whose value is a URL, sanitised with esc_url_raw.
+	 */
+	const URL_KEYS = array( 'job_link', 'apply_url' );
 
-    private static $instance = null;
+	private static $instance = null;
 
-    public static function instance() {
-        if ( null === self::$instance ) {
-            self::$instance = new self();
-        }
-        return self::$instance;
-    }
+	public static function instance() {
+		if ( null === self::$instance ) {
+			self::$instance = new self();
+		}
+		return self::$instance;
+	}
 
-    private function __construct() {
-        // Priorité 11 : après CCPTM_CPT (priorité 5) et après la priorité 10 à
-        // laquelle la plupart des plugins enregistrent leurs post types, tout en
-        // restant très en amont de rest_api_init qui construit le schéma REST.
-        add_action( 'init', array( $this, 'register_meta_keys' ), 11 );
+	private function __construct() {
+		// Priority 11: after CCPTM_CPT (priority 5) and after the priority 10 at
+		// which most plugins register their post types, while staying well ahead
+		// of rest_api_init, which builds the REST schema.
+		add_action( 'init', array( $this, 'register_meta_keys' ), 11 );
 
-        foreach ( self::get_coercion_post_types() as $post_type ) {
-            add_filter( "rest_pre_insert_{$post_type}", array( $this, 'coerce_meta_types' ), 10, 2 );
-        }
-    }
+		foreach ( self::get_coercion_post_types() as $post_type ) {
+			add_filter( "rest_pre_insert_{$post_type}", array( $this, 'coerce_meta_types' ), 10, 2 );
+		}
+	}
 
-    /**
-     * Post types sur lesquels les clés sont déclarées.
-     *
-     * Retourne un tableau vide si le plugin n'est pas configuré : sur un réseau
-     * multisite, les sites qui n'ont pas d'option ccptm_settings ne doivent rien
-     * déclarer du tout.
-     *
-     * @return string[]
-     */
-    public static function get_post_types() {
-        $settings = CCPTM_Settings::get();
-        $types    = array();
+	/**
+	 * The post types the keys are declared on.
+	 *
+	 * Returns an empty array when the plugin is not configured: on a multisite
+	 * network, sites with no ccptm_settings option must declare nothing at all.
+	 *
+	 *
+	 * @return string[]
+	 */
+	public static function get_post_types() {
+		$settings = CCPTM_Settings::get();
+		$types    = array();
 
-        if ( empty( $settings['cpt_key'] ) ) {
-            return $types;
-        }
+		if ( empty( $settings['cpt_key'] ) ) {
+			return $types;
+		}
 
-        $types[] = $settings['cpt_key'];
+		$types[] = $settings['cpt_key'];
 
-        // L'interception REST fait atterrir la requête sur le contrôleur de
-        // "post" : c'est le registre de meta de "post" qui sera consulté pour
-        // écrire l'objet "meta". Sans déclaration là, les champs seraient perdus
-        // silencieusement — exactement le bug que cette classe corrige.
-        if ( ! empty( $settings['register_meta_on_post'] ) || ! empty( $settings['intercept_rest'] ) ) {
-            $types[] = 'post';
-        }
+		// REST interception lands the request on the "post" controller, so it is
+		// the meta registry of "post" that gets consulted to write the "meta"
+		// object. Without a declaration there the fields would be lost silently,
+		// which is exactly the bug this class exists to fix.
+		if ( ! empty( $settings['register_meta_on_post'] ) || ! empty( $settings['intercept_rest'] ) ) {
+			$types[] = 'post';
+		}
 
-        /**
-         * Filtre les post types recevant les déclarations de meta.
-         *
-         * @param string[] $types
-         */
-        $types = (array) apply_filters( 'ccptm_meta_post_types', $types );
+		/**
+		 * Filters the post types the meta declarations are applied to.
+		 *
+		 * @param string[] $types
+		 */
+		$types = (array) apply_filters( 'ccptm_meta_post_types', $types );
 
-        return array_values( array_unique( array_filter( $types ) ) );
-    }
+		return array_values( array_unique( array_filter( $types ) ) );
+	}
 
-    /**
-     * Post types sur lesquels le filtre de coercition de type est branché.
-     *
-     * On inclut toujours "post", même quand les clés n'y sont pas déclarées :
-     * l'interception REST (CCPTM_REST) peut rerouter une requête arrivée sur
-     * /wp/v2/posts vers le CPT, et la coercition doit alors avoir eu lieu.
-     *
-     * @return string[]
-     */
-    public static function get_coercion_post_types() {
-        $settings = CCPTM_Settings::get();
+	/**
+	 * The post types the type coercion filter is hooked on.
+	 *
+	 * "post" is always included, even when the keys are not declared on it: REST
+	 * interception (CCPTM_REST) can re-route a request that arrived on
+	 * /wp/v2/posts to the custom post type, and coercion must have happened by then.
+	 *
+	 * @return string[]
+	 */
+	public static function get_coercion_post_types() {
+		$settings = CCPTM_Settings::get();
 
-        if ( empty( $settings['cpt_key'] ) ) {
-            return array();
-        }
+		if ( empty( $settings['cpt_key'] ) ) {
+			return array();
+		}
 
-        return array_values( array_unique( array( $settings['cpt_key'], 'post' ) ) );
-    }
+		return array_values( array_unique( array( $settings['cpt_key'], 'post' ) ) );
+	}
 
-    /**
-     * Nettoie une liste de clés : sanitisation, rejet du vide et des metas
-     * protégées, dédoublonnage. Partagée par get_keys() et get_extra_keys().
-     *
-     * @param array $keys
-     * @return string[]
-     */
-    private static function filter_keys( $keys ) {
-        $keys = array_map( 'sanitize_key', (array) $keys );
-        $keys = array_filter(
-            $keys,
-            static function ( $key ) {
-                // Une clé protégée ("_xxx") déclarée avec show_in_rest exposerait
-                // publiquement une meta interne : on les refuse systématiquement.
-                return '' !== $key && ! is_protected_meta( $key, 'post' );
-            }
-        );
+	/**
+	 * Cleans a list of keys: sanitisation, rejection of empty and protected meta,
+	 * deduplication. Shared by get_keys() and get_extra_keys().
+	 *
+	 * @param array $keys
+	 * @return string[]
+	 */
+	private static function filter_keys( $keys ) {
+		$keys = array_map( 'sanitize_key', (array) $keys );
+		$keys = array_filter(
+			$keys,
+			static function ( $key ) {
+				// A protected key ("_xxx") declared with show_in_rest would publicly
+				// expose an internal meta value, so they are always refused.
+				return '' !== $key && ! is_protected_meta( $key, 'post' );
+			}
+		);
 
-        return array_values( array_unique( $keys ) );
-    }
+		return array_values( array_unique( $keys ) );
+	}
 
-    /**
-     * Clés supplémentaires ajoutées par l'administrateur dans les réglages.
-     *
-     * Le socle JobAffinity en est toujours exclu : il est déclaré d'office par
-     * get_keys() et n'a donc rien à faire dans la liste des ajouts.
-     *
-     * @return string[]
-     */
-    public static function get_extra_keys() {
-        $settings = CCPTM_Settings::get();
+	/**
+	 * Additional keys added by the administrator in the settings.
+	 *
+	 * The JobAffinity set is always excluded from it: get_keys() declares it
+	 * unconditionally, so it has no business in the list of additions.
+	 *
+	 * @return string[]
+	 */
+	public static function get_extra_keys() {
+		$settings = CCPTM_Settings::get();
 
-        $extra = ( ! empty( $settings['extra_meta_keys'] ) && is_array( $settings['extra_meta_keys'] ) )
-            ? $settings['extra_meta_keys']
-            : array();
+		$extra = ( ! empty( $settings['extra_meta_keys'] ) && is_array( $settings['extra_meta_keys'] ) )
+			? $settings['extra_meta_keys']
+			: array();
 
-        return self::filter_keys( array_diff( (array) $extra, self::DEFAULT_KEYS ) );
-    }
+		return self::filter_keys( array_diff( (array) $extra, self::DEFAULT_KEYS ) );
+	}
 
-    /**
-     * Liste des clés à déclarer : le socle JobAffinity, puis les ajouts.
-     *
-     * Le socle est un invariant : il est réinjecté APRÈS le filtre, de sorte
-     * qu'aucune saisie dans les réglages ni aucun filtre tiers ne puisse le
-     * vider. Sans cette garantie, une clé JobAffinity manquante ferait perdre
-     * le champ silencieusement (201 Created, meta absente) — précisément le bug
-     * que cette classe existe pour éviter.
-     *
-     * @return string[]
-     */
-    public static function get_keys() {
-        $keys = array_merge( self::DEFAULT_KEYS, self::get_extra_keys() );
+	/**
+	 * The keys to declare: the JobAffinity set, then the additions.
+	 *
+	 * The set is an invariant: it is re-injected AFTER the filter, so that no
+	 * settings input and no third-party filter can empty it. Without that
+	 * guarantee a missing JobAffinity key would lose the field silently (201
+	 * Created, meta absent), precisely the bug this class exists to avoid.
+	 *
+	 *
+	 * @return string[]
+	 */
+	public static function get_keys() {
+		$keys = array_merge( self::DEFAULT_KEYS, self::get_extra_keys() );
 
-        /**
-         * Filtre la liste des clés meta déclarées dans l'API REST.
-         *
-         * Peut ajouter des clés ; ne peut pas retirer le socle JobAffinity.
-         *
-         * @param string[] $keys
-         */
-        $keys = self::filter_keys( (array) apply_filters( 'ccptm_meta_keys', $keys ) );
+		/**
+		 * Filters the list of meta keys declared in the REST API.
+		 *
+		 * Can add keys; cannot remove the JobAffinity set.
+		 *
+		 * @param string[] $keys
+		 */
+		$keys = self::filter_keys( (array) apply_filters( 'ccptm_meta_keys', $keys ) );
 
-        return array_values( array_unique( array_merge( self::DEFAULT_KEYS, $keys ) ) );
-    }
+		return array_values( array_unique( array_merge( self::DEFAULT_KEYS, $keys ) ) );
+	}
 
-    /**
-     * La clé est-elle déclarée ? Utilisé par CCPTM_REST pour éviter une
-     * double sanitisation sur le chemin "custom_fields".
-     *
-     * @param string $key
-     * @return bool
-     */
-    public static function is_registered_key( $key ) {
-        return in_array( $key, self::get_keys(), true );
-    }
+	/**
+	 * Is the key declared? Used by CCPTM_REST to avoid sanitising twice on the
+	 * "custom_fields" path.
+	 *
+	 * @param string $key
+	 * @return bool
+	 */
+	public static function is_registered_key( $key ) {
+		return in_array( $key, self::get_keys(), true );
+	}
 
-    /**
-     * Déclare chaque clé sur chaque post type concerné.
-     */
-    public function register_meta_keys() {
-        $post_types = self::get_post_types();
-        if ( empty( $post_types ) ) {
-            return;
-        }
+	/**
+	 * Declares every key on every relevant post type.
+	 */
+	public function register_meta_keys() {
+		$post_types = self::get_post_types();
+		if ( empty( $post_types ) ) {
+			return;
+		}
 
-        $keys = self::get_keys();
+		$keys = self::get_keys();
 
-        foreach ( $post_types as $post_type ) {
-            if ( 'post' !== $post_type && ! post_type_exists( $post_type ) ) {
-                continue;
-            }
+		foreach ( $post_types as $post_type ) {
+			if ( 'post' !== $post_type && ! post_type_exists( $post_type ) ) {
+				continue;
+			}
 
-            foreach ( $keys as $key ) {
-                register_post_meta(
-                    $post_type,
-                    $key,
-                    array(
-                        'show_in_rest'      => true,
-                        'single'            => true,
-                        'type'              => 'string',
-                        'description'       => sprintf(
-                            /* translators: %s: clé du champ personnalisé */
-                            __( 'Champ personnalisé « %s », déclaré par Custom CPT Manager.', 'custom-cpt-manager' ),
-                            $key
-                        ),
-                        'sanitize_callback' => array( __CLASS__, 'sanitize_meta' ),
-                        'auth_callback'     => array( __CLASS__, 'auth_meta' ),
-                        // Pas de 'default' : il forcerait get_post_meta() à
-                        // renvoyer array('') au lieu de array() sur tout le site,
-                        // y compris en dehors de l'API REST.
-                    )
-                );
-            }
-        }
-    }
+			foreach ( $keys as $key ) {
+				register_post_meta(
+					$post_type,
+					$key,
+					array(
+						'show_in_rest'      => true,
+						'single'            => true,
+						'type'              => 'string',
+						'description'       => sprintf(
+							/* translators: %s: the custom field key */
+							__( 'Custom field "%s", declared by JobAffinity CPT Manager.', 'jobaffinity-cpt-manager' ),
+							$key
+						),
+						'sanitize_callback' => array( __CLASS__, 'sanitize_meta' ),
+						'auth_callback'     => array( __CLASS__, 'auth_meta' ),
+						// No 'default': it would force get_post_meta() to return
+						// array('') instead of array() across the whole site, REST
+						// API or not.
+					)
+				);
+			}
+		}
+	}
 
-    /**
-     * Sanitisation appliquée à TOUS les chemins d'écriture d'un coup
-     * (objet "meta" REST, custom_fields, XML-RPC, metabox "Champs personnalisés"),
-     * puisque register_post_meta branche ce callback sur update_metadata().
-     *
-     * @param mixed  $value
-     * @param string $key
-     * @return mixed
-     */
-    public static function sanitize_meta( $value, $key = '', $object_type = '' ) {
-        // single => true : on ne devrait jamais recevoir de structure ici.
-        if ( is_array( $value ) || is_object( $value ) ) {
-            return $value;
-        }
+	/**
+	 * Sanitisation applied to EVERY write path at once (the REST "meta" object,
+	 * custom_fields, XML-RPC, the Custom Fields metabox), since
+	 * register_post_meta hooks this callback onto update_metadata().
+	 *
+	 * @param mixed  $value
+	 * @param string $key
+	 * @return mixed
+	 */
+	public static function sanitize_meta( $value, $key = '', $object_type = '' ) {
+		// single => true, so a structure should never reach this point.
+		if ( is_array( $value ) || is_object( $value ) ) {
+			return $value;
+		}
 
-        if ( self::is_url_key( $key ) ) {
-            $sanitized = esc_url_raw( (string) $value );
-        } else {
-            // Parité avec le chemin "custom_fields" historique.
-            $sanitized = CCPTM_REST::sanitize_scalar( $value );
-        }
+		if ( self::is_url_key( $key ) ) {
+			$sanitized = esc_url_raw( (string) $value );
+		} else {
+			// Parity with the historical "custom_fields" path.
+			$sanitized = CCPTM_REST::sanitize_scalar( $value );
+		}
 
-        /**
-         * Filtre la valeur sanitisée d'une meta déclarée.
-         *
-         * @param mixed  $sanitized
-         * @param mixed  $value     Valeur brute.
-         * @param string $key
-         */
-        return apply_filters( 'ccptm_sanitize_meta_value', $sanitized, $value, $key );
-    }
+		/**
+		 * Filters the sanitised value of a declared meta.
+		 *
+		 * @param mixed  $sanitized
+		 * @param mixed  $value     The raw value.
+		 * @param string $key
+		 */
+		return apply_filters( 'ccptm_sanitize_meta_value', $sanitized, $value, $key );
+	}
 
-    /**
-     * La clé contient-elle une URL ?
-     *
-     * @param string $key
-     * @return bool
-     */
-    private static function is_url_key( $key ) {
-        if ( '' === $key ) {
-            return false;
-        }
+	/**
+	 * Does the key hold a URL?
+	 *
+	 * @param string $key
+	 * @return bool
+	 */
+	private static function is_url_key( $key ) {
+		if ( '' === $key ) {
+			return false;
+		}
 
-        if ( in_array( $key, self::URL_KEYS, true ) ) {
-            return true;
-        }
+		if ( in_array( $key, self::URL_KEYS, true ) ) {
+			return true;
+		}
 
-        return (bool) preg_match( '/_(url|link)$/', $key );
-    }
+		return (bool) preg_match( '/_(url|link)$/', $key );
+	}
 
-    /**
-     * Autorisation de lecture/écriture de la meta.
-     *
-     * Signature du filtre auth_{$object_type}_meta_{$key}_for_{$subtype} :
-     * ( $allowed, $meta_key, $object_id, $user_id, $cap, $caps ).
-     *
-     * On utilise user_can( $user_id, ... ) et non current_user_can() : le filtre
-     * est aussi atteignable depuis un contexte admin/cron/CLI où l'utilisateur
-     * évalué n'est pas l'utilisateur courant.
-     *
-     * Note : le cœur calcule déjà map_meta_cap( 'edit_post', ... ) avant
-     * d'appeler ce filtre, donc edit_post reste imposé de toute façon. Ce
-     * callback est une défense en profondeur, pas l'unique garde-fou.
-     *
-     * @param bool   $allowed
-     * @param string $meta_key
-     * @param int    $object_id
-     * @param int    $user_id
-     * @return bool
-     */
-    public static function auth_meta( $allowed, $meta_key, $object_id, $user_id ) {
-        if ( ! empty( $object_id ) ) {
-            return user_can( $user_id, 'edit_post', (int) $object_id );
-        }
+	/**
+	 * Read and write authorisation for the meta.
+	 *
+	 * Signature of the auth_{$object_type}_meta_{$key}_for_{$subtype} filter:
+	 * ( $allowed, $meta_key, $object_id, $user_id, $cap, $caps ).
+	 *
+	 * user_can( $user_id, ... ) rather than current_user_can(): the filter is
+	 * also reachable from an admin, cron or CLI context where the user being
+	 * evaluated is not the current user.
+	 *
+	 * Note that core already resolves map_meta_cap( 'edit_post', ... ) before
+	 * calling this filter, so edit_post is enforced regardless. This callback is
+	 * defence in depth, not the only safeguard.
+	 *
+	 * @param bool   $allowed
+	 * @param string $meta_key
+	 * @param int    $object_id
+	 * @param int    $user_id
+	 * @return bool
+	 */
+	public static function auth_meta( $allowed, $meta_key, $object_id, $user_id ) {
+		if ( ! empty( $object_id ) ) {
+			return user_can( $user_id, 'edit_post', (int) $object_id );
+		}
 
-        return user_can( $user_id, 'edit_posts' );
-    }
+		return user_can( $user_id, 'edit_posts' );
+	}
 
-    /**
-     * Convertit en chaîne les scalaires JSON non-chaînes reçus dans "meta".
-     *
-     * Indispensable : toutes nos clés sont déclarées 'string'. Sans cette
-     * coercition, un `"job_salary_min": 45000` (nombre JSON) déclenche un
-     * rest_invalid_type dans WP_REST_Meta_Fields::update_value()... qui
-     * s'exécute APRÈS wp_insert_post(). Résultat : réponse 400 mais post déjà
-     * créé en base, vide de toute meta — et le client qui réessaie crée des
-     * doublons.
-     *
-     * On se branche sur rest_pre_insert_{$post_type}, appelé depuis
-     * prepare_item_for_database(), donc avant wp_insert_post() et très en amont
-     * de update_value(). Ce hook est déjà limité à nos post types, ce qui évite
-     * de filtrer les routes à la main.
-     *
-     * @param stdClass        $prepared_post
-     * @param WP_REST_Request $request
-     * @return stdClass
-     */
-    public function coerce_meta_types( $prepared_post, $request ) {
-        $meta = $request->get_param( 'meta' );
+	/**
+	 * Casts non-string JSON scalars received in "meta" to strings.
+	 *
+	 * Required, because every key is declared 'string'. Without this coercion a
+	 * `"job_salary_min": 45000` (a JSON number) raises a rest_invalid_type in
+	 * WP_REST_Meta_Fields::update_value(), which runs AFTER wp_insert_post(). The
+	 * result: a 400 response, but the post is already in the database with no
+	 * meta at all, and a client that retries creates duplicates.
+	 *
+	 *
+	 * Hooked on rest_pre_insert_{$post_type}, called from
+	 * prepare_item_for_database(), hence before wp_insert_post() and well ahead
+	 * of update_value(). That hook is already scoped to our post types, which
+	 * saves filtering routes by hand.
+	 *
+	 * @param stdClass        $prepared_post
+	 * @param WP_REST_Request $request
+	 * @return stdClass
+	 */
+	public function coerce_meta_types( $prepared_post, $request ) {
+		$meta = $request->get_param( 'meta' );
 
-        if ( ! is_array( $meta ) || empty( $meta ) ) {
-            return $prepared_post;
-        }
+		if ( ! is_array( $meta ) || empty( $meta ) ) {
+			return $prepared_post;
+		}
 
-        $changed = false;
+		$changed = false;
 
-        // On itère sur NOS clés, pas sur la charge utile : une clé non déclarée
-        // ne nous regarde pas.
-        foreach ( self::get_keys() as $key ) {
-            if ( ! array_key_exists( $key, $meta ) ) {
-                continue;
-            }
+		// Iterate over OUR keys, not over the payload: an undeclared key is none
+		// of our business.
+		foreach ( self::get_keys() as $key ) {
+			if ( ! array_key_exists( $key, $meta ) ) {
+				continue;
+			}
 
-            $value = $meta[ $key ];
+			$value = $meta[ $key ];
 
-            // null       => le cœur supprime la meta, on ne touche pas.
-            // string     => déjà valide.
-            // array/objet => ce n'est pas à nous d'aplatir : on laisse le cœur
-            //                répondre 400 plutôt que de masquer un bug client.
-            if ( null === $value || is_string( $value ) || is_array( $value ) || is_object( $value ) ) {
-                continue;
-            }
+			// null         => core deletes the meta; leave it alone.
+			// string       => already valid.
+			// array/object => not ours to flatten; let core answer 400 rather than
+			//                 hide a client bug.
+			if ( null === $value || is_string( $value ) || is_array( $value ) || is_object( $value ) ) {
+				continue;
+			}
 
-            if ( is_bool( $value ) ) {
-                $meta[ $key ] = $value ? '1' : '';
-            } elseif ( is_int( $value ) || is_float( $value ) ) {
-                $meta[ $key ] = (string) $value;
-            } else {
-                continue;
-            }
+			if ( is_bool( $value ) ) {
+				$meta[ $key ] = $value ? '1' : '';
+			} elseif ( is_int( $value ) || is_float( $value ) ) {
+				$meta[ $key ] = (string) $value;
+			} else {
+				continue;
+			}
 
-            $changed = true;
-        }
+			$changed = true;
+		}
 
-        if ( $changed ) {
-            $request->set_param( 'meta', $meta );
-        }
+		if ( $changed ) {
+			$request->set_param( 'meta', $meta );
+		}
 
-        return $prepared_post;
-    }
+		return $prepared_post;
+	}
 }
