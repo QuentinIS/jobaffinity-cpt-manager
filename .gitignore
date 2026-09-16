@@ -1,0 +1,28 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# Editors
+.idea/
+.vscode/
+*.sublime-*
+*.swp
+*~
+
+# Dependencies (installed in CI only, never committed)
+/node_modules/
+/vendor/
+
+# Build output
+/build/
+/dist/
+*.zip
+
+# Tooling caches
+.phpcs-cache
+.phpunit.result.cache
+
+# Local environment
+.env
+.env.*
+*.log
