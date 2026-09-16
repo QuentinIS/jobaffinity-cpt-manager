@@ -237,7 +237,7 @@ class CCPTM_Meta {
 						'type'              => 'string',
 						'description'       => sprintf(
 							/* translators: %s: clé du champ personnalisé */
-							__( 'Champ personnalisé « %s », déclaré par Custom CPT Manager.', 'jobaffinity-cpt-manager' ),
+							__( 'Custom field "%s", declared by JobAffinity CPT Manager.', 'jobaffinity-cpt-manager' ),
 							$key
 						),
 						'sanitize_callback' => array( __CLASS__, 'sanitize_meta' ),

@@ -137,8 +137,8 @@ function ccptm_admin_notice_not_configured() {
 
 	$url = admin_url( 'options-general.php?page=ccptm-settings' );
 	echo '<div class="notice notice-warning"><p>';
-	echo esc_html__( 'Custom CPT Manager : veuillez configurer la clé du Custom Post Type. ', 'jobaffinity-cpt-manager' );
-	echo '<a href="' . esc_url( $url ) . '">' . esc_html__( 'Ouvrir la configuration', 'jobaffinity-cpt-manager' ) . '</a>';
+	echo esc_html__( 'JobAffinity CPT Manager: please configure the custom post type key. ', 'jobaffinity-cpt-manager' );
+	echo '<a href="' . esc_url( $url ) . '">' . esc_html__( 'Open settings', 'jobaffinity-cpt-manager' ) . '</a>';
 	echo '</p></div>';
 }
 add_action( 'admin_notices', 'ccptm_admin_notice_not_configured' );

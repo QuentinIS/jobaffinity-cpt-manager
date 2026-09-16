@@ -77,7 +77,7 @@ class CCPTM_REST {
 				'get_callback'    => array( $this, 'read_custom_fields' ),
 				'update_callback' => array( $this, 'write_custom_fields' ),
 				'schema'          => array(
-					'description' => __( 'Champs personnalisés (meta) associés au post.', 'jobaffinity-cpt-manager' ),
+					'description' => __( 'Custom fields (meta) attached to the post.', 'jobaffinity-cpt-manager' ),
 					'type'        => 'object',
 					'context'     => array( 'view', 'edit' ),
 				),
@@ -93,7 +93,7 @@ class CCPTM_REST {
 				'get_callback'    => null,
 				'update_callback' => array( $this, 'write_custom_fields' ),
 				'schema'          => array(
-					'description' => __( 'Alias d\'écriture pour custom_fields.', 'jobaffinity-cpt-manager' ),
+					'description' => __( 'Write alias for custom_fields.', 'jobaffinity-cpt-manager' ),
 					'type'        => 'object',
 					'context'     => array( 'edit' ),
 				),
@@ -147,7 +147,7 @@ class CCPTM_REST {
 		if ( ! is_array( $value ) && ! is_object( $value ) ) {
 			return new WP_Error(
 				'ccptm_invalid_meta',
-				__( 'Le champ doit être un objet de paires clé/valeur.', 'jobaffinity-cpt-manager' ),
+				__( 'The field must be an object of key/value pairs.', 'jobaffinity-cpt-manager' ),
 				array( 'status' => 400 )
 			);
 		}
@@ -162,7 +162,7 @@ class CCPTM_REST {
 		if ( ! current_user_can( 'edit_post', $post_id ) ) {
 			return new WP_Error(
 				'ccptm_forbidden',
-				__( 'Vous n\'avez pas la permission de modifier ce post.', 'jobaffinity-cpt-manager' ),
+				__( 'You are not allowed to edit this post.', 'jobaffinity-cpt-manager' ),
 				array( 'status' => 403 )
 			);
 		}

@@ -45,31 +45,31 @@ class CCPTM_CPT {
 			'singular_name'         => $singular,
 			'menu_name'             => $plural,
 			'name_admin_bar'        => $singular,
-			'add_new'               => __( 'Ajouter', 'jobaffinity-cpt-manager' ),
+			'add_new'               => __( 'Add New', 'jobaffinity-cpt-manager' ),
 			/* translators: %s: singular post type label. */
-			'add_new_item'          => sprintf( __( 'Ajouter un nouveau %s', 'jobaffinity-cpt-manager' ), $singular ),
+			'add_new_item'          => sprintf( __( 'Add new %s', 'jobaffinity-cpt-manager' ), $singular ),
 			/* translators: %s: singular post type label. */
-			'new_item'              => sprintf( __( 'Nouveau %s', 'jobaffinity-cpt-manager' ), $singular ),
+			'new_item'              => sprintf( __( 'New %s', 'jobaffinity-cpt-manager' ), $singular ),
 			/* translators: %s: singular post type label. */
-			'edit_item'             => sprintf( __( 'Modifier %s', 'jobaffinity-cpt-manager' ), $singular ),
+			'edit_item'             => sprintf( __( 'Edit %s', 'jobaffinity-cpt-manager' ), $singular ),
 			/* translators: %s: singular post type label. */
-			'view_item'             => sprintf( __( 'Voir %s', 'jobaffinity-cpt-manager' ), $singular ),
+			'view_item'             => sprintf( __( 'View %s', 'jobaffinity-cpt-manager' ), $singular ),
 			/* translators: %s: plural post type label. */
-			'all_items'             => sprintf( __( 'Tous les %s', 'jobaffinity-cpt-manager' ), $plural ),
+			'all_items'             => sprintf( __( 'All %s', 'jobaffinity-cpt-manager' ), $plural ),
 			/* translators: %s: plural post type label. */
-			'search_items'          => sprintf( __( 'Rechercher des %s', 'jobaffinity-cpt-manager' ), $plural ),
+			'search_items'          => sprintf( __( 'Search %s', 'jobaffinity-cpt-manager' ), $plural ),
 			/* translators: %s: singular post type label. */
-			'not_found'             => sprintf( __( 'Aucun %s trouvé.', 'jobaffinity-cpt-manager' ), $singular ),
+			'not_found'             => sprintf( __( 'No %s found.', 'jobaffinity-cpt-manager' ), $singular ),
 			/* translators: %s: singular post type label. */
-			'not_found_in_trash'    => sprintf( __( 'Aucun %s dans la corbeille.', 'jobaffinity-cpt-manager' ), $singular ),
-			'featured_image'        => __( 'Image mise en avant', 'jobaffinity-cpt-manager' ),
-			'set_featured_image'    => __( 'Définir l\'image mise en avant', 'jobaffinity-cpt-manager' ),
-			'remove_featured_image' => __( 'Retirer l\'image mise en avant', 'jobaffinity-cpt-manager' ),
-			'use_featured_image'    => __( 'Utiliser comme image mise en avant', 'jobaffinity-cpt-manager' ),
+			'not_found_in_trash'    => sprintf( __( 'No %s found in Trash.', 'jobaffinity-cpt-manager' ), $singular ),
+			'featured_image'        => __( 'Featured image', 'jobaffinity-cpt-manager' ),
+			'set_featured_image'    => __( 'Set featured image', 'jobaffinity-cpt-manager' ),
+			'remove_featured_image' => __( 'Remove featured image', 'jobaffinity-cpt-manager' ),
+			'use_featured_image'    => __( 'Use as featured image', 'jobaffinity-cpt-manager' ),
 			/* translators: %s: plural post type label. */
-			'archives'              => sprintf( __( 'Archives des %s', 'jobaffinity-cpt-manager' ), $plural ),
+			'archives'              => sprintf( __( '%s archives', 'jobaffinity-cpt-manager' ), $plural ),
 			/* translators: %s: singular post type label. */
-			'attributes'            => sprintf( __( 'Attributs du %s', 'jobaffinity-cpt-manager' ), $singular ),
+			'attributes'            => sprintf( __( '%s attributes', 'jobaffinity-cpt-manager' ), $singular ),
 		);
 
 		$args = array(
