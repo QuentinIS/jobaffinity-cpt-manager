@@ -10,6 +10,10 @@ The plugin is the receiving end only: it never contacts JobAffinity and makes
 no outbound HTTP request of any kind. JobAffinity pushes to your site over
 XML-RPC or REST, and the plugin decides where those publications land.
 
+JobAffinity is an applicant tracking system published by
+[Intuition Software](https://www.intuition-software.com/); the product site is
+[jobaffinity.com](https://www.jobaffinity.com/).
+
 End-user documentation lives in [`readme.txt`](readme.txt) (the wordpress.org
 format) and, in French, in
 [`INTEGRATION-JOBAFFINITY.md`](INTEGRATION-JOBAFFINITY.md).

@@ -16,7 +16,7 @@ By default, JobAffinity publishes your job offers as ordinary WordPress posts, m
 
 It registers a single custom post type whose key you choose (`offer`, `job`, `vacancy` — whatever suits your site), declares the field schema JobAffinity sends, and can intercept incoming publications so they land in that post type instead of in Posts.
 
-JobAffinity is a recruitment platform (applicant tracking system) published by Intuition Software, who also publish this plugin. It is the receiving end on your WordPress site: it never contacts JobAffinity, makes no outbound HTTP request of any kind, and collects no data. JobAffinity pushes to your site over XML-RPC or the REST API, and the plugin decides where those publications land.
+JobAffinity is a recruitment platform (applicant tracking system) published by [Intuition Software](https://www.intuition-software.com/), who also publish this plugin. The product site is [jobaffinity.com](https://www.jobaffinity.com/). It is the receiving end on your WordPress site: it never contacts JobAffinity, makes no outbound HTTP request of any kind, and collects no data. JobAffinity pushes to your site over XML-RPC or the REST API, and the plugin decides where those publications land.
 
 = What it does =
 

@@ -5,8 +5,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: JobAffinity CPT Manager 1.4.0\n"
 "Report-Msgid-Bugs-To: https://github.com/QuentinIS/jobaffinity-cpt-manager/issues\n"
-"POT-Creation-Date: 2026-09-16 18:14+0000\n"
-"PO-Revision-Date: 2026-09-16 18:14+0000\n"
+"POT-Creation-Date: 2026-09-16 18:17+0000\n"
+"PO-Revision-Date: 2026-09-16 18:17+0000\n"
 "Last-Translator: JobAffinity <contact@jobaffinity.fr>\n"
 "Language-Team: French <fr@li.org>\n"
 "Language: fr_FR\n"
@@ -41,7 +41,7 @@ msgstr ""
 
 #. Author URI of the plugin
 #: jobaffinity-cpt-manager.php
-msgid "https://www.jobaffinity.com/"
+msgid "https://www.intuition-software.com/"
 msgstr ""
 
 #: includes/class-ccptm-admin.php:62
