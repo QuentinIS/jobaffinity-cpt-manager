@@ -46,19 +46,29 @@ class CCPTM_CPT {
 			'menu_name'             => $plural,
 			'name_admin_bar'        => $singular,
 			'add_new'               => __( 'Ajouter', 'custom-cpt-manager' ),
+			/* translators: %s: singular post type label. */
 			'add_new_item'          => sprintf( __( 'Ajouter un nouveau %s', 'custom-cpt-manager' ), $singular ),
+			/* translators: %s: singular post type label. */
 			'new_item'              => sprintf( __( 'Nouveau %s', 'custom-cpt-manager' ), $singular ),
+			/* translators: %s: singular post type label. */
 			'edit_item'             => sprintf( __( 'Modifier %s', 'custom-cpt-manager' ), $singular ),
+			/* translators: %s: singular post type label. */
 			'view_item'             => sprintf( __( 'Voir %s', 'custom-cpt-manager' ), $singular ),
+			/* translators: %s: plural post type label. */
 			'all_items'             => sprintf( __( 'Tous les %s', 'custom-cpt-manager' ), $plural ),
+			/* translators: %s: plural post type label. */
 			'search_items'          => sprintf( __( 'Rechercher des %s', 'custom-cpt-manager' ), $plural ),
+			/* translators: %s: singular post type label. */
 			'not_found'             => sprintf( __( 'Aucun %s trouvé.', 'custom-cpt-manager' ), $singular ),
+			/* translators: %s: singular post type label. */
 			'not_found_in_trash'    => sprintf( __( 'Aucun %s dans la corbeille.', 'custom-cpt-manager' ), $singular ),
 			'featured_image'        => __( 'Image mise en avant', 'custom-cpt-manager' ),
 			'set_featured_image'    => __( 'Définir l\'image mise en avant', 'custom-cpt-manager' ),
 			'remove_featured_image' => __( 'Retirer l\'image mise en avant', 'custom-cpt-manager' ),
 			'use_featured_image'    => __( 'Utiliser comme image mise en avant', 'custom-cpt-manager' ),
+			/* translators: %s: plural post type label. */
 			'archives'              => sprintf( __( 'Archives des %s', 'custom-cpt-manager' ), $plural ),
+			/* translators: %s: singular post type label. */
 			'attributes'            => sprintf( __( 'Attributs du %s', 'custom-cpt-manager' ), $singular ),
 		);
 
