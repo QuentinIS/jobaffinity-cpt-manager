@@ -390,7 +390,7 @@ class CCPTM_Admin {
 	"job_id": "1023736",
 	"job_contract_type": "CDI",
 	"job_salary_min": "28000",
-	"job_link": "https://jobaffinity.fr/apply/976itcfhzqxldumwbv"
+	"job_link": "https://example.com/apply/976itcfhzqxldumwbv"
 	},
 	"custom_fields": {
 	"custom_regions": "YVELINES SUD"
