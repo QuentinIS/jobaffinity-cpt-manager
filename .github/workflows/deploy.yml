@@ -15,6 +15,9 @@ jobs:
   deploy:
     name: Deploy to WordPress.org
     runs-on: ubuntu-latest
+    # Same guard as asset-update.yml: nothing to deploy to until the plugin is
+    # approved and the SVN repository exists.
+    if: ${{ vars.WPORG_APPROVED == 'true' }}
     steps:
       - uses: actions/checkout@v4
 

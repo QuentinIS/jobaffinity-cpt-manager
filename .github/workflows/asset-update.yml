@@ -18,6 +18,9 @@ jobs:
   trunk:
     name: Push assets and readme to WordPress.org
     runs-on: ubuntu-latest
+    # Inert until the plugin is approved and the SVN secrets exist. Without
+    # this guard the job fails on every push to main, for no reason.
+    if: ${{ vars.WPORG_APPROVED == 'true' }}
     steps:
       - uses: actions/checkout@v4
 

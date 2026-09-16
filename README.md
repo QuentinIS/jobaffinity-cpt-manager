@@ -185,7 +185,17 @@ see `.github/workflows/lint.yml`.
 
 ## Releasing
 
-Releases are tag-driven. `Version` in the plugin header, `Stable tag` in
+The two wordpress.org workflows are gated on a repository variable and do
+nothing until it is set. Once the plugin is approved and its SVN repository
+exists, add the `SVN_USERNAME` and `SVN_PASSWORD` secrets (with two-factor
+authentication enabled, `SVN_PASSWORD` must be an SVN-specific application
+password from your wordpress.org profile), then set the variable:
+
+```bash
+gh variable set WPORG_APPROVED --body true
+```
+
+Releases are then tag-driven. `Version` in the plugin header, `Stable tag` in
 `readme.txt` and the git tag must all match, and tags carry **no** `v` prefix —
 10up's deploy action reuses the tag name as the SVN tag directory.
 
