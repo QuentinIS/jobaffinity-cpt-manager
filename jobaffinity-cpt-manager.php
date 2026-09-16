@@ -6,8 +6,8 @@
  * Version:           1.4.0
  * Requires at least: 5.6
  * Requires PHP:      7.4
- * Author:            JobAffinity
- * Author URI:        https://jobaffinity.fr
+ * Author:            Intuition Software
+ * Author URI:        https://www.jobaffinity.com/
  * License:           GPL-2.0-or-later
  * License URI:       https://www.gnu.org/licenses/gpl-2.0.html
  * Text Domain:       jobaffinity-cpt-manager
