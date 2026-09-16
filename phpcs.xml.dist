@@ -20,13 +20,18 @@
 
 	<rule ref="WordPress.WP.I18n">
 		<properties>
-			<property name="text_domain" type="array" value="jobaffinity-cpt-manager"/>
+			<property name="text_domain" type="array">
+				<element value="jobaffinity-cpt-manager"/>
+			</property>
 		</properties>
 	</rule>
 
 	<rule ref="WordPress.NamingConventions.PrefixAllGlobals">
 		<properties>
-			<property name="prefixes" type="array" value="ccptm,CCPTM"/>
+			<property name="prefixes" type="array">
+				<element value="ccptm"/>
+				<element value="CCPTM"/>
+			</property>
 		</properties>
 	</rule>
 </ruleset>

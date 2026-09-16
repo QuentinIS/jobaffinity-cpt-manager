@@ -1,4 +1,10 @@
 <?php
+/**
+ * Declaration of the custom fields to the REST API.
+ *
+ * @package JobAffinity_CPT_Manager
+ */
+
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
@@ -59,8 +65,18 @@ class CCPTM_Meta {
 	 */
 	const URL_KEYS = array( 'job_link', 'apply_url' );
 
+	/**
+	 * Sole instance of the class.
+	 *
+	 * @var CCPTM_Meta|null
+	 */
 	private static $instance = null;
 
+	/**
+	 * Returns the sole instance, creating it on first call.
+	 *
+	 * @return CCPTM_Meta
+	 */
 	public static function instance() {
 		if ( null === self::$instance ) {
 			self::$instance = new self();
@@ -68,6 +84,9 @@ class CCPTM_Meta {
 		return self::$instance;
 	}
 
+	/**
+	 * Hooks the class into WordPress. Private: use instance().
+	 */
 	private function __construct() {
 		// Priority 11: after CCPTM_CPT (priority 5) and after the priority 10 at
 		// which most plugins register their post types, while staying well ahead
@@ -84,7 +103,6 @@ class CCPTM_Meta {
 	 *
 	 * Returns an empty array when the plugin is not configured: on a multisite
 	 * network, sites with no ccptm_settings option must declare nothing at all.
-	 *
 	 *
 	 * @return string[]
 	 */
@@ -139,7 +157,7 @@ class CCPTM_Meta {
 	 * Cleans a list of keys: sanitisation, rejection of empty and protected meta,
 	 * deduplication. Shared by get_keys() and get_extra_keys().
 	 *
-	 * @param array $keys
+	 * @param array $keys Raw keys to clean.
 	 * @return string[]
 	 */
 	private static function filter_keys( $keys ) {
@@ -182,7 +200,6 @@ class CCPTM_Meta {
 	 * guarantee a missing JobAffinity key would lose the field silently (201
 	 * Created, meta absent), precisely the bug this class exists to avoid.
 	 *
-	 *
 	 * @return string[]
 	 */
 	public static function get_keys() {
@@ -204,7 +221,7 @@ class CCPTM_Meta {
 	 * Is the key declared? Used by CCPTM_REST to avoid sanitising twice on the
 	 * "custom_fields" path.
 	 *
-	 * @param string $key
+	 * @param string $key Meta key to look up.
 	 * @return bool
 	 */
 	public static function is_registered_key( $key ) {
@@ -256,11 +273,12 @@ class CCPTM_Meta {
 	 * custom_fields, XML-RPC, the Custom Fields metabox), since
 	 * register_post_meta hooks this callback onto update_metadata().
 	 *
-	 * @param mixed  $value
-	 * @param string $key
+	 * @param mixed  $value       Raw value being written.
+	 * @param string $key         Meta key the value belongs to.
+	 * @param string $object_type Object type, part of the core callback signature and unused here.
 	 * @return mixed
 	 */
-	public static function sanitize_meta( $value, $key = '', $object_type = '' ) {
+	public static function sanitize_meta( $value, $key = '', $object_type = '' ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed -- $object_type is imposed by the register_post_meta() sanitize_callback signature.
 		// single => true, so a structure should never reach this point.
 		if ( is_array( $value ) || is_object( $value ) ) {
 			return $value;
@@ -286,7 +304,7 @@ class CCPTM_Meta {
 	/**
 	 * Does the key hold a URL?
 	 *
-	 * @param string $key
+	 * @param string $key Meta key to test.
 	 * @return bool
 	 */
 	private static function is_url_key( $key ) {
@@ -315,10 +333,10 @@ class CCPTM_Meta {
 	 * calling this filter, so edit_post is enforced regardless. This callback is
 	 * defence in depth, not the only safeguard.
 	 *
-	 * @param bool   $allowed
-	 * @param string $meta_key
-	 * @param int    $object_id
-	 * @param int    $user_id
+	 * @param bool   $allowed   Whether access is currently granted.
+	 * @param string $meta_key  Meta key being accessed.
+	 * @param int    $object_id Post the meta belongs to.
+	 * @param int    $user_id   User the check applies to.
 	 * @return bool
 	 */
 	public static function auth_meta( $allowed, $meta_key, $object_id, $user_id ) {
@@ -344,8 +362,8 @@ class CCPTM_Meta {
 	 * of update_value(). That hook is already scoped to our post types, which
 	 * saves filtering routes by hand.
 	 *
-	 * @param stdClass        $prepared_post
-	 * @param WP_REST_Request $request
+	 * @param stdClass        $prepared_post Post about to be inserted.
+	 * @param WP_REST_Request $request       The incoming request.
 	 * @return stdClass
 	 */
 	public function coerce_meta_types( $prepared_post, $request ) {
@@ -369,7 +387,7 @@ class CCPTM_Meta {
 			// null         => core deletes the meta; leave it alone.
 			// string       => already valid.
 			// array/object => not ours to flatten; let core answer 400 rather than
-			//                 hide a client bug.
+			// hide a client bug.
 			if ( null === $value || is_string( $value ) || is_array( $value ) || is_object( $value ) ) {
 				continue;
 			}

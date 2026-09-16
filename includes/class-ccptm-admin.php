@@ -1,4 +1,10 @@
 <?php
+/**
+ * The settings screen in the WordPress admin.
+ *
+ * @package JobAffinity_CPT_Manager
+ */
+
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
@@ -8,8 +14,18 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class CCPTM_Admin {
 
+	/**
+	 * Sole instance of the class.
+	 *
+	 * @var CCPTM_Admin|null
+	 */
 	private static $instance = null;
 
+	/**
+	 * Returns the sole instance, creating it on first call.
+	 *
+	 * @return CCPTM_Admin
+	 */
 	public static function instance() {
 		if ( null === self::$instance ) {
 			self::$instance = new self();
@@ -17,11 +33,17 @@ class CCPTM_Admin {
 		return self::$instance;
 	}
 
+	/**
+	 * Hooks the class into WordPress. Private: use instance().
+	 */
 	private function __construct() {
 		add_action( 'admin_menu', array( $this, 'register_menu' ) );
 		add_action( 'admin_post_ccptm_save_settings', array( $this, 'handle_save' ) );
 	}
 
+	/**
+	 * Registers the settings page under the Settings menu.
+	 */
 	public function register_menu() {
 		add_options_page(
 			__( 'JobAffinity CPT Manager', 'jobaffinity-cpt-manager' ),
@@ -32,6 +54,9 @@ class CCPTM_Admin {
 		);
 	}
 
+	/**
+	 * Renders the settings page.
+	 */
 	public function render_page() {
 		if ( ! current_user_can( 'manage_options' ) ) {
 			wp_die( esc_html__( 'Access denied.', 'jobaffinity-cpt-manager' ) );
@@ -42,14 +67,20 @@ class CCPTM_Admin {
 
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Display-only flag set by our own wp_safe_redirect(); nothing is mutated here.
 		if ( isset( $_GET['ccptm_updated'] ) && '1' === sanitize_text_field( wp_unslash( $_GET['ccptm_updated'] ) ) ) {
-			$notices[] = array( 'type' => 'success', 'msg' => __( 'Settings saved.', 'jobaffinity-cpt-manager' ) );
+			$notices[] = array(
+				'type' => 'success',
+				'msg'  => __( 'Settings saved.', 'jobaffinity-cpt-manager' ),
+			);
 		}
 
 		// Error messages handed over through a transient.
 		$err_transient = get_transient( 'ccptm_errors_' . get_current_user_id() );
 		if ( is_array( $err_transient ) ) {
 			foreach ( $err_transient as $e ) {
-				$notices[] = array( 'type' => 'error', 'msg' => $e );
+				$notices[] = array(
+					'type' => 'error',
+					'msg'  => $e,
+				);
 			}
 			delete_transient( 'ccptm_errors_' . get_current_user_id() );
 		}
@@ -352,18 +383,18 @@ class CCPTM_Admin {
 <pre style="background:#f6f7f7;padding:12px;border:1px solid #dcdcde;overflow:auto;">POST <?php echo esc_html( $base ); ?>
 
 {
-  "title": "Vendeur H/F - Versailles",
-  "content": "Description du poste...",
-  "status": "publish",
-  "meta": {
+	"title": "Vendeur H/F - Versailles",
+	"content": "Description du poste...",
+	"status": "publish",
+	"meta": {
 	"job_id": "1023736",
 	"job_contract_type": "CDI",
 	"job_salary_min": "28000",
 	"job_link": "https://jobaffinity.fr/apply/976itcfhzqxldumwbv"
-  },
-  "custom_fields": {
+	},
+	"custom_fields": {
 	"custom_regions": "YVELINES SUD"
-  }
+	}
 }</pre>
 				<p class="description">
 					<?php esc_html_e( 'Declared keys go through "meta"; free-form, multi-valued or null-deleted keys go through "custom_fields". If the same key arrives through both, the "custom_fields" value wins.', 'jobaffinity-cpt-manager' ); ?>
@@ -418,17 +449,17 @@ class CCPTM_Admin {
 		check_admin_referer( 'ccptm_save_settings', 'ccptm_nonce' );
 
 		$input = array(
-			'cpt_key'          => isset( $_POST['cpt_key'] )   ? sanitize_text_field( wp_unslash( $_POST['cpt_key'] ) )   : '',
-			'singular'         => isset( $_POST['singular'] )  ? sanitize_text_field( wp_unslash( $_POST['singular'] ) )  : '',
-			'plural'           => isset( $_POST['plural'] )    ? sanitize_text_field( wp_unslash( $_POST['plural'] ) )    : '',
-			'menu_icon'        => isset( $_POST['menu_icon'] ) ? sanitize_text_field( wp_unslash( $_POST['menu_icon'] ) ) : '',
-			'intercept_xmlrpc' => isset( $_POST['intercept_xmlrpc'] ) ? '1' : '',
-			'intercept_rest'   => isset( $_POST['intercept_rest'] )   ? '1' : '',
-			'rest_base'        => isset( $_POST['rest_base'] ) ? sanitize_text_field( wp_unslash( $_POST['rest_base'] ) ) : '',
+			'cpt_key'               => isset( $_POST['cpt_key'] ) ? sanitize_text_field( wp_unslash( $_POST['cpt_key'] ) ) : '',
+			'singular'              => isset( $_POST['singular'] ) ? sanitize_text_field( wp_unslash( $_POST['singular'] ) ) : '',
+			'plural'                => isset( $_POST['plural'] ) ? sanitize_text_field( wp_unslash( $_POST['plural'] ) ) : '',
+			'menu_icon'             => isset( $_POST['menu_icon'] ) ? sanitize_text_field( wp_unslash( $_POST['menu_icon'] ) ) : '',
+			'intercept_xmlrpc'      => isset( $_POST['intercept_xmlrpc'] ) ? '1' : '',
+			'intercept_rest'        => isset( $_POST['intercept_rest'] ) ? '1' : '',
+			'rest_base'             => isset( $_POST['rest_base'] ) ? sanitize_text_field( wp_unslash( $_POST['rest_base'] ) ) : '',
 			// wp_unslash before splitting: sanitize_key would eat the backslashes
 			// WordPress adds. sanitize_textarea_field, not sanitize_text_field, so
 			// that the newlines separating the keys survive.
-			'extra_meta_keys'  => isset( $_POST['extra_meta_keys'] ) ? sanitize_textarea_field( wp_unslash( $_POST['extra_meta_keys'] ) ) : '',
+			'extra_meta_keys'       => isset( $_POST['extra_meta_keys'] ) ? sanitize_textarea_field( wp_unslash( $_POST['extra_meta_keys'] ) ) : '',
 			'register_meta_on_post' => isset( $_POST['register_meta_on_post'] ) ? '1' : '',
 		);
 

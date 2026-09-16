@@ -9,9 +9,11 @@
 # wordpress.org assets live in SVN /assets, never in the plugin zip
 /.wordpress-org
 
-# Development dependencies and tooling
+# Development dependencies, build output and tooling
 /node_modules
 /vendor
+/build
+/dist
 /tests
 /bin
 composer.json

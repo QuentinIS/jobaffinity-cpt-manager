@@ -1,4 +1,10 @@
 <?php
+/**
+ * Central handling of the plugin settings.
+ *
+ * @package JobAffinity_CPT_Manager
+ */
+
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
@@ -8,8 +14,18 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class CCPTM_Settings {
 
+	/**
+	 * Sole instance of the class.
+	 *
+	 * @var CCPTM_Settings|null
+	 */
 	private static $instance = null;
 
+	/**
+	 * Returns the sole instance, creating it on first call.
+	 *
+	 * @return CCPTM_Settings
+	 */
 	public static function instance() {
 		if ( null === self::$instance ) {
 			self::$instance = new self();
@@ -17,6 +33,9 @@ class CCPTM_Settings {
 		return self::$instance;
 	}
 
+	/**
+	 * Hooks the class into WordPress. Private: use instance().
+	 */
 	private function __construct() {}
 
 	/**
@@ -64,15 +83,15 @@ class CCPTM_Settings {
 	/**
 	 * Sanitises and saves the settings.
 	 *
-	 * @param array $input
+	 * @param array $input Raw form values.
 	 * @return array array( 'success' => bool, 'errors' => string[], 'data' => array )
 	 */
 	public static function save( $input ) {
 		$errors  = array();
 		$current = self::get();
 
-		$raw_key  = isset( $input['cpt_key'] ) ? $input['cpt_key'] : '';
-		$cpt_key  = self::sanitize_key( $raw_key );
+		$raw_key = isset( $input['cpt_key'] ) ? $input['cpt_key'] : '';
+		$cpt_key = self::sanitize_key( $raw_key );
 
 		if ( '' === $cpt_key ) {
 			$errors[] = __( 'The post type key is required and must be 1 to 20 lowercase alphanumeric characters. Hyphens and underscores are allowed.', 'jobaffinity-cpt-manager' );
@@ -89,7 +108,7 @@ class CCPTM_Settings {
 		}
 
 		$singular = isset( $input['singular'] ) ? sanitize_text_field( $input['singular'] ) : '';
-		$plural   = isset( $input['plural'] )   ? sanitize_text_field( $input['plural'] )   : '';
+		$plural   = isset( $input['plural'] ) ? sanitize_text_field( $input['plural'] ) : '';
 
 		if ( '' === $singular ) {
 			$singular = ucfirst( $cpt_key );
@@ -216,6 +235,9 @@ class CCPTM_Settings {
 
 	/**
 	 * Sanitises the post type key: lowercase alphanumerics plus underscore and hyphen, 20 characters max.
+	 *
+	 * @param string $key Raw key.
+	 * @return string
 	 */
 	public static function sanitize_key( $key ) {
 		$key = strtolower( (string) $key );
@@ -232,7 +254,7 @@ class CCPTM_Settings {
 	 * letting a pattern be injected into register_rest_route(). 32 characters,
 	 * because rest_base has no post type key length limit.
 	 *
-	 * @param string $base
+	 * @param string $base Raw route base.
 	 * @return string
 	 */
 	public static function sanitize_rest_base( $base ) {
@@ -279,13 +301,41 @@ class CCPTM_Settings {
 	 */
 	private static function core_rest_bases() {
 		return array(
-			'posts', 'pages', 'media', 'blocks', 'templates', 'template-parts',
-			'global-styles', 'navigation', 'font-families', 'font-collections',
-			'menu-items', 'menus', 'menu-locations', 'categories', 'tags',
-			'comments', 'users', 'search', 'types', 'statuses', 'taxonomies',
-			'settings', 'themes', 'plugins', 'sidebars', 'widgets', 'widget-types',
-			'block-types', 'block-directory', 'block-renderer', 'pattern-directory',
-			'block-patterns', 'revisions', 'autosaves', 'oembed',
+			'posts',
+			'pages',
+			'media',
+			'blocks',
+			'templates',
+			'template-parts',
+			'global-styles',
+			'navigation',
+			'font-families',
+			'font-collections',
+			'menu-items',
+			'menus',
+			'menu-locations',
+			'categories',
+			'tags',
+			'comments',
+			'users',
+			'search',
+			'types',
+			'statuses',
+			'taxonomies',
+			'settings',
+			'themes',
+			'plugins',
+			'sidebars',
+			'widgets',
+			'widget-types',
+			'block-types',
+			'block-directory',
+			'block-renderer',
+			'pattern-directory',
+			'block-patterns',
+			'revisions',
+			'autosaves',
+			'oembed',
 		);
 	}
 
@@ -299,7 +349,7 @@ class CCPTM_Settings {
 	 * Called from handle_save(), well after "init", so the post type and
 	 * taxonomy registries are complete by then.
 	 *
-	 * @param string   $rest_base
+	 * @param string   $rest_base Effective route base to test.
 	 * @param string[] $exclude   Post types to ignore, namely our own.
 	 * @return string Error message, or an empty string when there is no conflict.
 	 */

@@ -15,11 +15,20 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # Check what actually ships, not the repository root: .distignore keeps
+      # the development files out of the zip, and Plugin Check rightly rejects
+      # them when they are present.
+      - name: Build the distribution tree
+        run: |
+          mkdir -p build/jobaffinity-cpt-manager
+          rsync -a --exclude-from=.distignore ./ build/jobaffinity-cpt-manager/
+          find build -type f | sort
+
       # Same ruleset the wordpress.org review team's automated pass uses:
       # readme.txt parsing, escaping, sanitisation, i18n, file headers.
       - uses: wordpress/plugin-check-action@v1
         with:
-          build-dir: './'
+          build-dir: './build/jobaffinity-cpt-manager'
 
   phpcs:
     name: WordPress Coding Standards

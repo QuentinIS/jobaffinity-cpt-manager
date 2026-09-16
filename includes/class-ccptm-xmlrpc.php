@@ -1,4 +1,10 @@
 <?php
+/**
+ * XML-RPC interception of incoming JobAffinity publications.
+ *
+ * @package JobAffinity_CPT_Manager
+ */
+
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
@@ -15,8 +21,18 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class CCPTM_XMLRPC {
 
+	/**
+	 * Sole instance of the class.
+	 *
+	 * @var CCPTM_XMLRPC|null
+	 */
 	private static $instance = null;
 
+	/**
+	 * Returns the sole instance, creating it on first call.
+	 *
+	 * @return CCPTM_XMLRPC
+	 */
 	public static function instance() {
 		if ( null === self::$instance ) {
 			self::$instance = new self();
@@ -24,6 +40,9 @@ class CCPTM_XMLRPC {
 		return self::$instance;
 	}
 
+	/**
+	 * Hooks the class into WordPress. Private: use instance().
+	 */
 	private function __construct() {
 		$settings = CCPTM_Settings::get();
 		if ( empty( $settings['cpt_key'] ) || empty( $settings['intercept_xmlrpc'] ) ) {
@@ -66,6 +85,9 @@ class CCPTM_XMLRPC {
 	 *
 	 * The custom_fields in the struct are what we look at: JobAffinity always
 	 * sends at least job_id and job_link.
+	 *
+	 * @param array $content_struct The XML-RPC struct received.
+	 * @return bool
 	 */
 	private function looks_like_jobaffinity( $content_struct ) {
 		if ( ! is_array( $content_struct ) ) {

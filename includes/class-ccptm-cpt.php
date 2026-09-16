@@ -1,4 +1,10 @@
 <?php
+/**
+ * Registration of the configurable custom post type.
+ *
+ * @package JobAffinity_CPT_Manager
+ */
+
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
@@ -13,8 +19,18 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class CCPTM_CPT {
 
+	/**
+	 * Sole instance of the class.
+	 *
+	 * @var CCPTM_CPT|null
+	 */
 	private static $instance = null;
 
+	/**
+	 * Returns the sole instance, creating it on first call.
+	 *
+	 * @return CCPTM_CPT
+	 */
 	public static function instance() {
 		if ( null === self::$instance ) {
 			self::$instance = new self();
@@ -22,6 +38,9 @@ class CCPTM_CPT {
 		return self::$instance;
 	}
 
+	/**
+	 * Hooks the class into WordPress. Private: use instance().
+	 */
 	private function __construct() {
 		add_action( 'init', array( $this, 'register_cpt' ), 5 );
 	}
@@ -38,7 +57,7 @@ class CCPTM_CPT {
 		}
 
 		$singular = ! empty( $settings['singular'] ) ? $settings['singular'] : ucfirst( $key );
-		$plural   = ! empty( $settings['plural'] )   ? $settings['plural']   : $singular . 's';
+		$plural   = ! empty( $settings['plural'] ) ? $settings['plural'] : $singular . 's';
 
 		$labels = array(
 			'name'                  => $plural,
@@ -73,25 +92,25 @@ class CCPTM_CPT {
 		);
 
 		$args = array(
-			'labels'              => $labels,
-			'public'              => true,
-			'publicly_queryable'  => true,
-			'show_ui'             => true,
-			'show_in_menu'        => true,
-			'show_in_nav_menus'   => true,
-			'show_in_admin_bar'   => true,
-			'show_in_rest'        => true,
+			'labels'                => $labels,
+			'public'                => true,
+			'publicly_queryable'    => true,
+			'show_ui'               => true,
+			'show_in_menu'          => true,
+			'show_in_nav_menus'     => true,
+			'show_in_admin_bar'     => true,
+			'show_in_rest'          => true,
 			// The REST route base is decoupled from the key, so /wp/v2/offer can be
 			// served even when the post type is keyed "offer-intern".
 			// Empty in the settings means falling back to the post type key.
-			'rest_base'           => CCPTM_Settings::get_rest_base(),
+			'rest_base'             => CCPTM_Settings::get_rest_base(),
 			'rest_controller_class' => 'WP_REST_Posts_Controller',
-			'menu_position'       => 20,
-			'menu_icon'           => $settings['menu_icon'],
-			'capability_type'     => 'post', // Reuse the caps of 'post': admins, editors and authors.
-			'map_meta_cap'        => true,
-			'hierarchical'        => false,
-			'supports'            => array(
+			'menu_position'         => 20,
+			'menu_icon'             => $settings['menu_icon'],
+			'capability_type'       => 'post', // Reuse the caps of 'post': admins, editors and authors.
+			'map_meta_cap'          => true,
+			'hierarchical'          => false,
+			'supports'              => array(
 				'title',
 				'editor',
 				'author',
@@ -104,18 +123,17 @@ class CCPTM_CPT {
 				'page-attributes',
 				'post-formats',
 			),
-			'taxonomies'          => array( 'category', 'post_tag' ),
-			'has_archive'         => true,
-			'rewrite'             => array(
+			'taxonomies'            => array( 'category', 'post_tag' ),
+			'has_archive'           => true,
+			'rewrite'               => array(
 				'slug'       => $key,
 				'with_front' => false,
 			),
-			'query_var'           => true,
-			'can_export'          => true,
-			'delete_with_user'    => false,
+			'query_var'             => true,
+			'can_export'            => true,
+			'delete_with_user'      => false,
 		);
 
 		register_post_type( $key, $args );
 	}
-
 }

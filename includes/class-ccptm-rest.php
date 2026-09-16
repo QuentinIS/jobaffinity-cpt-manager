@@ -1,4 +1,10 @@
 <?php
+/**
+ * REST API integration: the custom_fields field and optional interception.
+ *
+ * @package JobAffinity_CPT_Manager
+ */
+
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
@@ -30,8 +36,18 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class CCPTM_REST {
 
+	/**
+	 * Sole instance of the class.
+	 *
+	 * @var CCPTM_REST|null
+	 */
 	private static $instance = null;
 
+	/**
+	 * Returns the sole instance, creating it on first call.
+	 *
+	 * @return CCPTM_REST
+	 */
 	public static function instance() {
 		if ( null === self::$instance ) {
 			self::$instance = new self();
@@ -39,6 +55,9 @@ class CCPTM_REST {
 		return self::$instance;
 	}
 
+	/**
+	 * Hooks the class into WordPress. Private: use instance().
+	 */
 	private function __construct() {
 		add_action( 'rest_api_init', array( $this, 'register_rest_fields' ) );
 
@@ -103,6 +122,9 @@ class CCPTM_REST {
 
 	/**
 	 * GET: returns the custom fields, meaning every unprotected meta.
+	 *
+	 * @param array $post_array Post data prepared by the controller.
+	 * @return stdClass
 	 */
 	public function read_custom_fields( $post_array ) {
 		$post_id = isset( $post_array['id'] ) ? (int) $post_array['id'] : 0;
@@ -110,8 +132,8 @@ class CCPTM_REST {
 			return new stdClass();
 		}
 
-		$all  = get_post_meta( $post_id );
-		$out  = array();
+		$all = get_post_meta( $post_id );
+		$out = array();
 
 		foreach ( $all as $key => $values ) {
 			// Protected meta (underscore-prefixed) is hidden.
@@ -142,8 +164,13 @@ class CCPTM_REST {
 	 * - protected keys ("_xxx") are refused UNLESS the user explicitly holds the
 	 *   matching edit_post_meta capability;
 	 * - invalid keys (non-string, empty, forbidden characters) are ignored.
+	 *
+	 * @param array|object $value      Key/value pairs received.
+	 * @param WP_Post      $post       Post being written to.
+	 * @param string       $field_name REST field name, part of the core callback signature and unused here.
+	 * @return true|WP_Error
 	 */
-	public function write_custom_fields( $value, $post, $field_name ) {
+	public function write_custom_fields( $value, $post, $field_name ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed -- $field_name is imposed by the register_rest_field() update_callback signature.
 		if ( ! is_array( $value ) && ! is_object( $value ) ) {
 			return new WP_Error(
 				'ccptm_invalid_meta',
@@ -240,8 +267,8 @@ class CCPTM_REST {
 	/**
 	 * Step 1: detection. Changes nothing, only arms the flag.
 	 *
-	 * @param stdClass        $prepared_post
-	 * @param WP_REST_Request $request
+	 * @param stdClass        $prepared_post Post about to be inserted.
+	 * @param WP_REST_Request $request       The incoming request.
 	 * @return stdClass
 	 */
 	public function flag_reroute( $prepared_post, $request ) {
@@ -271,10 +298,10 @@ class CCPTM_REST {
 	/**
 	 * Step 2: application, just before the database write.
 	 *
-	 * @param array $data      Sanitised data passed to wp_insert_post().
-	 * @param array $postarr
-	 * @param array $unsanitized_postarr
-	 * @param bool  $update
+	 * @param array $data                Sanitised data passed to wp_insert_post().
+	 * @param array $postarr             Sanitised post array.
+	 * @param array $unsanitized_postarr Unsanitised post array.
+	 * @param bool  $update              Whether this is an update rather than an insert.
 	 * @return array
 	 */
 	public function apply_reroute( $data, $postarr = array(), $unsanitized_postarr = array(), $update = false ) {
@@ -305,7 +332,7 @@ class CCPTM_REST {
 	 * meta, custom_fields or meta_input). Same criterion as
 	 * CCPTM_XMLRPC::looks_like_jobaffinity().
 	 *
-	 * @param WP_REST_Request $request
+	 * @param WP_REST_Request $request The incoming request.
 	 * @return bool
 	 */
 	private function looks_like_jobaffinity( $request ) {
@@ -328,6 +355,9 @@ class CCPTM_REST {
 	 * Minimal sanitisation of a meta value, preserving types and structure.
 	 * WordPress calls wp_unslash upstream anyway.
 	 *
+	 * @param mixed $value Raw value.
+	 * @return mixed
+	 *
 	 * The rules:
 	 * - arrays and objects are left as they are; update_post_meta will serialise;
 	 * - booleans, integers and floats are preserved;
@@ -344,6 +374,9 @@ class CCPTM_REST {
 
 	/**
 	 * Sanitises a scalar value according to its type.
+	 *
+	 * @param mixed $value Raw scalar.
+	 * @return mixed
 	 */
 	public static function sanitize_scalar( $value ) {
 		if ( is_bool( $value ) || is_int( $value ) || is_float( $value ) || null === $value ) {
@@ -364,6 +397,9 @@ class CCPTM_REST {
 
 	/**
 	 * Detects a "list" array: numerically indexed, starting at 0.
+	 *
+	 * @param mixed $arr Value to test.
+	 * @return bool
 	 */
 	private function is_list( $arr ) {
 		if ( ! is_array( $arr ) ) {
