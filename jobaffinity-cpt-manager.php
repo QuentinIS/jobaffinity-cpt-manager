@@ -1,23 +1,36 @@
 <?php
 /**
- * Plugin Name: Custom CPT Manager
- * Plugin URI:  https://jobaffinity.fr
- * Description: Crée un Custom Post Type configurable (clé choisie à l'installation, ex. "offer") destiné à recevoir les offres publiées par JobAffinity. Identique aux articles natifs, exposé dans l'API REST WordPress avec support dynamique des champs personnalisés envoyés par JobAffinity (job_id, job_link, job_contract_type, champs custom_*, etc.). Accès administrateur, éditeur et auteur.
- * Version:     1.3.0
+ * Plugin Name:       JobAffinity CPT Manager
+ * Plugin URI:        https://github.com/quentinnicolet/jobaffinity-cpt-manager
+ * Description:       Receives job offers pushed by JobAffinity over the REST API or XML-RPC into a dedicated custom post type, with full custom field support.
+ * Version:           1.4.0
  * Requires at least: 5.6
- * Requires PHP: 7.4
- * Author:      JobAffinity
- * Author URI:  https://jobaffinity.fr
- * License:     GPL-2.0-or-later
- * License URI: https://www.gnu.org/licenses/gpl-2.0.html
- * Text Domain: custom-cpt-manager
+ * Requires PHP:      7.4
+ * Author:            JobAffinity
+ * Author URI:        https://jobaffinity.fr
+ * License:           GPL-2.0-or-later
+ * License URI:       https://www.gnu.org/licenses/gpl-2.0.html
+ * Text Domain:       jobaffinity-cpt-manager
+ * Domain Path:       /languages
+ *
+ * @package JobAffinity_CPT_Manager
+ *
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by the Free
+ * Software Foundation; either version 2 of the License, or (at your option)
+ * any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+ * more details.
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Pas d'accès direct.
 }
 
-define( 'CCPTM_VERSION', '1.3.0' );
+define( 'CCPTM_VERSION', '1.4.0' );
 define( 'CCPTM_OPTION_KEY', 'ccptm_settings' );
 define( 'CCPTM_PLUGIN_FILE', __FILE__ );
 define( 'CCPTM_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
@@ -65,6 +78,24 @@ function ccptm_deactivate() {
 register_deactivation_hook( __FILE__, 'ccptm_deactivate' );
 
 /**
+ * Charge les traductions livrées dans /languages.
+ *
+ * Sur "init" priorité 0 et non "plugins_loaded" : depuis WordPress 6.7,
+ * charger un text domain avant "init" déclenche une notice
+ * _load_textdomain_just_in_time. La priorité 0 passe malgré tout devant
+ * CCPTM_CPT::register_cpt() (init, priorité 5), premier consommateur de
+ * chaînes traduites.
+ */
+function ccptm_load_textdomain() {
+	load_plugin_textdomain(
+		'jobaffinity-cpt-manager',
+		false,
+		dirname( plugin_basename( CCPTM_PLUGIN_FILE ) ) . '/languages'
+	);
+}
+add_action( 'init', 'ccptm_load_textdomain', 0 );
+
+/**
  * Bootstrap : on initialise les classes du plugin.
  */
 function ccptm_bootstrap() {
@@ -106,8 +137,8 @@ function ccptm_admin_notice_not_configured() {
 
 	$url = admin_url( 'options-general.php?page=ccptm-settings' );
 	echo '<div class="notice notice-warning"><p>';
-	echo esc_html__( 'Custom CPT Manager : veuillez configurer la clé du Custom Post Type. ', 'custom-cpt-manager' );
-	echo '<a href="' . esc_url( $url ) . '">' . esc_html__( 'Ouvrir la configuration', 'custom-cpt-manager' ) . '</a>';
+	echo esc_html__( 'Custom CPT Manager : veuillez configurer la clé du Custom Post Type. ', 'jobaffinity-cpt-manager' );
+	echo '<a href="' . esc_url( $url ) . '">' . esc_html__( 'Ouvrir la configuration', 'jobaffinity-cpt-manager' ) . '</a>';
 	echo '</p></div>';
 }
 add_action( 'admin_notices', 'ccptm_admin_notice_not_configured' );

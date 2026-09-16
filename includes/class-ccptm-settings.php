@@ -75,7 +75,7 @@ class CCPTM_Settings {
 		$cpt_key  = self::sanitize_key( $raw_key );
 
 		if ( '' === $cpt_key ) {
-			$errors[] = __( 'La clé du CPT est obligatoire et doit contenir entre 1 et 20 caractères alphanumériques en minuscules (tirets et underscores autorisés).', 'custom-cpt-manager' );
+			$errors[] = __( 'La clé du CPT est obligatoire et doit contenir entre 1 et 20 caractères alphanumériques en minuscules (tirets et underscores autorisés).', 'jobaffinity-cpt-manager' );
 		}
 
 		// Évite les collisions avec les post types natifs et quelques clés réservées.
@@ -83,7 +83,7 @@ class CCPTM_Settings {
 		if ( in_array( $cpt_key, $reserved, true ) ) {
 			$errors[] = sprintf(
 				/* translators: %s: clé choisie */
-				__( 'La clé "%s" est réservée par WordPress. Choisissez une autre valeur.', 'custom-cpt-manager' ),
+				__( 'La clé "%s" est réservée par WordPress. Choisissez une autre valeur.', 'jobaffinity-cpt-manager' ),
 				$cpt_key
 			);
 		}
@@ -311,7 +311,7 @@ class CCPTM_Settings {
 		if ( in_array( $rest_base, self::core_rest_bases(), true ) ) {
 			return sprintf(
 				/* translators: %s: base de route choisie */
-				__( 'La base de route REST "%s" est reservee par le coeur de WordPress. Choisissez une autre valeur.', 'custom-cpt-manager' ),
+				__( 'La base de route REST "%s" est reservee par le coeur de WordPress. Choisissez une autre valeur.', 'jobaffinity-cpt-manager' ),
 				$rest_base
 			);
 		}
@@ -332,7 +332,7 @@ class CCPTM_Settings {
 			if ( $base === $rest_base ) {
 				return sprintf(
 					/* translators: 1: base de route, 2: post type en conflit */
-					__( 'La base de route REST "%1$s" est deja utilisee par le post type "%2$s".', 'custom-cpt-manager' ),
+					__( 'La base de route REST "%1$s" est deja utilisee par le post type "%2$s".', 'jobaffinity-cpt-manager' ),
 					$rest_base,
 					$post_type->name
 				);
@@ -354,7 +354,7 @@ class CCPTM_Settings {
 			if ( $base === $rest_base ) {
 				return sprintf(
 					/* translators: 1: base de route, 2: taxonomie en conflit */
-					__( 'La base de route REST "%1$s" est deja utilisee par la taxonomie "%2$s".', 'custom-cpt-manager' ),
+					__( 'La base de route REST "%1$s" est deja utilisee par la taxonomie "%2$s".', 'jobaffinity-cpt-manager' ),
 					$rest_base,
 					$taxonomy->name
 				);
