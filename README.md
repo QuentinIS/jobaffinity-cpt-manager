@@ -7,16 +7,31 @@ own instead of mixing them into Posts, and exposes every field JobAffinity
 sends through the REST API.
 
 The plugin is the receiving end only: it never contacts JobAffinity and makes
-no outbound HTTP request of any kind. JobAffinity pushes to your site over
-XML-RPC or REST, and the plugin decides where those publications land.
+no outbound HTTP request of any kind. JobAffinity pushes to your site and the
+plugin decides where those publications land — over the REST API, which
+authenticates with a revocable application password and can target the post
+type directly, or over XML-RPC for connections that predate it.
 
 JobAffinity is an applicant tracking system published by
 [Intuition Software](https://www.intuition-software.com/); the product site is
-[jobaffinity.com](https://www.jobaffinity.com/).
-
-End-user documentation lives in [`readme.txt`](readme.txt) (the wordpress.org
-format) and, in French, in
+[jobaffinity.com](https://www.jobaffinity.com/). End-user documentation lives in
+[`readme.txt`](readme.txt) (the wordpress.org format) and, in French, in
 [`INTEGRATION-JOBAFFINITY.md`](INTEGRATION-JOBAFFINITY.md).
+
+## Installation
+
+Requires WordPress 5.6 and PHP 7.4.
+
+1. Install and activate the plugin.
+2. Open **Settings → JobAffinity CPT Manager** and set the post type key,
+   `offer` for example. Nothing is registered until that key is set.
+3. In JobAffinity, under *Admin → Publications*, point your WordPress source at
+   the same key so offers land in the post type instead of in Posts.
+
+Settle on the key before publishing: changing it later leaves existing content
+on the old post type. See [Changing the post type key](#changing-the-post-type-key).
+
+![The settings screen](.wordpress-org/screenshot-1.png)
 
 ## Features
 
@@ -38,29 +53,13 @@ format) and, in French, in
   `meta_input`), which accepts any key without pre-declaration, supports
   multi-valued keys and deletes a key when sent `null`.
 - **Optional interception** of incoming XML-RPC and REST publications carrying
-  a `job_id` meta, re-routing them from `post` to the custom post type.
+  a `job_id` meta, re-routing them from `post` to the custom post type. This is
+  a fallback: a JobAffinity source that names the post type publishes straight
+  to it and needs no interception.
 
-## Architecture
+## Usage
 
-```
-jobaffinity-cpt-manager.php       Bootstrap, activation
-includes/
-  class-ccptm-settings.php        Options, validation, migration
-  class-ccptm-cpt.php             Post type registration (init, priority 5)
-  class-ccptm-meta.php            register_post_meta() declarations
-  class-ccptm-rest.php            custom_fields REST field + REST interception
-  class-ccptm-xmlrpc.php          XML-RPC interception
-  class-ccptm-admin.php           Settings screen
-uninstall.php                     Per-site cleanup, content left untouched
-languages/                        .pot template only; locales come from
-                                  translate.wordpress.org
-```
-
-`plugins_loaded` instantiates the classes in order; `CCPTM_Settings::maybe_migrate()`
-runs before `CCPTM_Meta` so the legacy `meta_keys` option is converted before
-meta keys are registered on `init` priority 11.
-
-## `meta` or `custom_fields`?
+### `meta` or `custom_fields`?
 
 |                                 | `meta`                     | `custom_fields`        |
 | ------------------------------- | -------------------------- | ---------------------- |
@@ -121,7 +120,7 @@ curl -X POST https://example.com/wp-json/wp/v2/offer \
 
 Send `null` as a value to delete a meta key.
 
-## Security notes
+## Security
 
 - Protected meta (underscore-prefixed, such as `_wp_page_template`) is filtered
   out on read and refused on write unless the user explicitly holds the matching
@@ -145,7 +144,9 @@ Send `null` as a value to delete a meta key.
 | `ccptm_meta_post_types`      | Change which post types the declarations are applied to.                                       |
 | `ccptm_sanitize_meta_value`  | Customise the sanitisation of a declared meta value.                                           |
 
-## Multisite
+## Operational notes
+
+### Multisite
 
 Settings live in the **per-site** option `ccptm_settings`. Each site in a
 network therefore has its own post type key, route base and field list — usually
@@ -153,14 +154,14 @@ what you want, since `custom_*` fields differ per site. A site with no settings
 registers neither the post type nor the meta. Network activation works, but
 each site still has to be configured individually.
 
-## Changing the key afterwards
+### Changing the post type key
 
 The key can be changed, but doing so changes the public URLs, changes the REST
 route base if that field is left empty, and does not migrate existing posts:
 they stay attached to the old `post_type` until migrated by hand. Settle on the
 key before creating content.
 
-## Compatibility
+### Known conflict
 
 Do not run the `offer-xmlrpc` plugin at the same time with the key `offer`. It
 registers the same post type at `init` priority 10 **without** `show_in_rest`,
@@ -170,6 +171,28 @@ route.
 ## Development
 
 WordPress runs in Docker; nothing is installed on the host.
+
+### Architecture
+
+```
+jobaffinity-cpt-manager.php       Bootstrap, activation
+includes/
+  class-ccptm-settings.php        Options, validation, migration
+  class-ccptm-cpt.php             Post type registration (init, priority 5)
+  class-ccptm-meta.php            register_post_meta() declarations
+  class-ccptm-rest.php            custom_fields REST field + REST interception
+  class-ccptm-xmlrpc.php          XML-RPC interception
+  class-ccptm-admin.php           Settings screen
+uninstall.php                     Per-site cleanup, content left untouched
+languages/                        .pot template only; locales come from
+                                  translate.wordpress.org
+```
+
+`plugins_loaded` instantiates the classes in order; `CCPTM_Settings::maybe_migrate()`
+runs before `CCPTM_Meta` so the legacy `meta_keys` option is converted before
+meta keys are registered on `init` priority 11.
+
+### Commands
 
 ```bash
 # Regenerate the translation template

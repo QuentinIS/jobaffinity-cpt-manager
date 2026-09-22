@@ -2,14 +2,14 @@
 
 Ce guide complète la documentation officielle [« Comment publier vos offres sur votre site WordPress ? »](https://help.jobaffinity.fr/fr/articles/11561675-comment-publier-vos-offres-sur-votre-site-wordpress) de JobAffinity.
 
-Par défaut, JobAffinity publie vos offres comme des **articles WordPress classiques** (dans la section *Articles*). Avec le plugin **Custom CPT Manager**, les offres sont routées vers un **Custom Post Type dédié** (ex. `offer`), ce qui permet :
+Par défaut, JobAffinity publie vos offres comme des **articles WordPress classiques** (dans la section *Articles*). Avec le plugin **JobAffinity CPT Manager**, les offres sont routées vers un **Custom Post Type dédié** (ex. `offer`), ce qui permet :
 
 - de ne pas mélanger les offres avec le blog de l'entreprise,
 - d'avoir un menu dédié dans l'admin (*Offres*),
 - d'exposer proprement les offres dans l'API REST,
 - de conserver l'intégralité des champs personnalisés envoyés par JobAffinity.
 
-> **À noter** : JobAffinity publie via XML-RPC sur le post type `post`. Le plugin fonctionne en mode API REST pour ses fonctionnalités natives. Pour intercepter le flux XML-RPC de JobAffinity et le rediriger vers le CPT, il faut activer l'option dédiée (section 4 ci-dessous).
+> **À noter** : le canal recommandé est l'**API REST** de WordPress. Dans *Admin > Publications*, le champ **Type de contenu** de votre source JobAffinity accepte la clé du CPT : les offres arrivent alors directement dedans, sans interception. Les options d'interception (section 4) ne servent qu'aux flux qui visent encore le post type `post`, XML-RPC compris.
 
 ---
 
@@ -23,25 +23,26 @@ Par défaut, JobAffinity publie vos offres comme des **articles WordPress classi
 
 ## 1. Installer et activer le plugin
 
-1. Téléchargez l'archive `custom-cpt-manager.zip`.
-2. Dans l'admin WordPress, allez dans **Extensions > Ajouter > Téléverser une extension**.
-3. Sélectionnez le fichier zip et cliquez sur **Installer maintenant**.
-4. Activez le plugin.
+1. Dans l'admin WordPress, allez dans **Extensions > Ajouter une extension**.
+2. Recherchez **JobAffinity CPT Manager**, ou téléversez l'archive si vous l'avez téléchargée.
+3. Cliquez sur **Installer maintenant**, puis **Activer**.
 
-Un bandeau jaune apparaît en haut de l'admin : « Custom CPT Manager : veuillez configurer la clé du Custom Post Type. »
+Un bandeau apparaît en haut de l'admin : « JobAffinity CPT Manager : please configure the custom post type key. »
 
 ---
 
 ## 2. Configurer le CPT
 
-Allez dans **Réglages > Custom CPT Manager** et remplissez :
+Allez dans **Réglages > JobAffinity CPT Manager** et remplissez :
 
 | Champ | Valeur recommandée | Explication |
 |---|---|---|
-| Clé du CPT | `offer` | Identifiant interne et slug d'URL (minuscules, pas d'accents) |
-| Libellé singulier | `Offre` | Affiché dans l'admin (« Ajouter une nouvelle Offre ») |
-| Libellé pluriel | `Offres` | Nom du menu dans la sidebar admin |
-| Icône du menu | `dashicons-businessperson` | Une [Dashicon WordPress](https://developer.wordpress.org/resource/dashicons/) |
+| **Clé du type de contenu** (*Post type key*) | `offer` | Identifiant interne et slug d'URL (minuscules, chiffres, tirets, 20 caractères max) |
+| **Libellé singulier** (*Singular label*) | `Offre` | Affiché dans l'admin (« Ajouter une nouvelle Offre ») |
+| **Libellé pluriel** (*Plural label*) | `Offres` | Nom du menu dans la sidebar admin |
+| **Icône du menu** (*Menu icon*) | `dashicons-businessperson` | Une [Dashicon WordPress](https://developer.wordpress.org/resource/dashicons/) |
+
+Les libellés sont donnés en français suivis de l'intitulé d'origine : la traduction française est servie par translate.wordpress.org et peut ne pas encore être active sur votre installation.
 
 Cliquez sur **Enregistrer les réglages**. Un nouveau menu **Offres** apparaît dans la sidebar.
 
@@ -55,7 +56,9 @@ Comme indiqué dans la doc JobAffinity :
 
 1. Allez dans **Utilisateurs > Ajouter**.
 2. Créez un utilisateur `jobaffinity` avec le rôle **Auteur** (ou Éditeur).
-3. Générez un mot de passe fort.
+3. Ouvrez sa fiche, section **Mots de passe d'application**, et générez-en un nommé `JobAffinity`. Copiez-le immédiatement : WordPress ne le réaffiche jamais.
+
+C'est ce mot de passe d'application que vous saisirez côté JobAffinity, pas le mot de passe du compte. Il est propre à cette intégration et se révoque en un clic depuis la même page.
 
 Le plugin donne automatiquement à ce rôle l'accès complet au CPT (les capabilities sont héritées de `post`, donc admin / éditeur / auteur ont les mêmes droits sur les offres que sur les articles).
 
@@ -63,28 +66,39 @@ Le plugin donne automatiquement à ce rôle l'accès complet au CPT (les capabil
 
 ## 4. Router les publications JobAffinity vers le CPT
 
-JobAffinity publie en XML-RPC vers le post type `post`. Pour rediriger ce flux vers votre CPT, le plugin intègre un **détecteur automatique**.
+### Le chemin normal — nommer le type de contenu dans la source
 
-### Activation de l'interception XML-RPC
+Dans JobAffinity, **Admin > Publications**, éditez votre source WordPress :
 
-Dans **Réglages > Custom CPT Manager**, cochez la case :
+- **Mode de publication** : API REST
+- **Identifiant** / **Mot de passe** : le compte `jobaffinity` et son mot de passe d'application (section 3)
+- **Type de contenu** : la clé du CPT, `offer` par exemple
 
-> ☑ **Rediriger automatiquement les publications JobAffinity (XML-RPC) vers ce CPT**
+JobAffinity publie alors directement sur `/wp-json/wp/v2/offer`. Aucune interception n'est nécessaire, et les champs libres `custom_*` passent par l'objet `custom_fields` du plugin (section 6).
+
+### Le repli — interception d'un flux qui vise encore `post`
+
+Si le flux ne peut pas nommer le type de contenu, le plugin intègre un **détecteur automatique**. Dans **Réglages > JobAffinity CPT Manager**, cochez selon le cas :
+
+> ☑ **Interception API REST** (*REST API interception*) — pour un flux qui arrive sur `/wp-json/wp/v2/posts`
+> ☑ **Interception XML-RPC** (*XML-RPC interception*) — pour une connexion encore en XML-RPC
 
 Comment ça marche concrètement :
 
-1. JobAffinity envoie une requête XML-RPC `wp.newPost` vers votre WordPress.
-2. Le plugin inspecte les `custom_fields` de la requête.
-3. Si la meta `job_id` est présente (signature JobAffinity), le `post_type` de la publication est changé de `post` vers votre CPT (`offer`) avant l'insertion en base.
+1. JobAffinity envoie sa publication vers votre WordPress, en visant le post type `post`.
+2. Le plugin inspecte les champs personnalisés de la requête.
+3. Si la meta `job_id` est présente (signature JobAffinity), le `post_type` est changé de `post` vers votre CPT (`offer`) avant l'insertion en base.
 4. Les articles classiques du site (blog, actualités) ne sont **pas** affectés.
+
+L'interception REST ne s'applique qu'à la **création** d'une offre, jamais à la mise à jour d'un contenu existant.
 
 ### Pourquoi la détection par `job_id` ?
 
 C'est la seule meta envoyée systématiquement par JobAffinity sur toutes les offres (contrairement à `job_location` ou `job_link` qui peuvent être vides dans certains cas). Ça garantit qu'aucune publication non-JobAffinity ne soit redirigée par erreur.
 
-### Alternative — Utiliser l'API REST native
+### XML-RPC, mode d'héritage
 
-Si vous développez votre propre intégration (par exemple depuis un autre ATS), utilisez directement l'endpoint REST du CPT, décrit en section 6. L'interception XML-RPC n'est alors pas nécessaire.
+XML-RPC reste pris en charge pour les connexions antérieures à l'arrivée de REST, mais il exige le **vrai mot de passe** du compte, ne publie que sur `post`, et `xmlrpc.php` est bloqué par défaut par la plupart des extensions de sécurité. Pour toute nouvelle configuration, utilisez l'API REST.
 
 ---
 
@@ -96,7 +110,7 @@ JobAffinity envoie les meta suivantes, toutes conservées par le plugin et acces
 
 Ces 22 clés sont **déclarées** par le plugin via `register_post_meta()`. C'est ce qui les rend utilisables dans l'objet `meta` standard de l'API REST.
 
-Elles forment un **socle obligatoire** : elles sont toujours déclarées et ne peuvent pas être retirées depuis l'interface. Dans *Réglages → Custom CPT Manager*, le champ **Champs supplémentaires** permet d'**ajouter** d'autres clés par-dessus ce socle, jamais de le remplacer.
+Elles forment un **socle obligatoire** : elles sont toujours déclarées et ne peuvent pas être retirées depuis l'interface. Dans *Réglages → JobAffinity CPT Manager*, le champ **Champs supplémentaires** permet d'**ajouter** d'autres clés par-dessus ce socle, jamais de le remplacer.
 
 | Clé | Description | Exemple |
 |---|---|---|
@@ -138,7 +152,7 @@ Les champs préfixés `custom_` sont configurés côté JobAffinity et diffèren
 Ils ne sont **pas** déclarés par défaut, donc **pas** utilisables dans `meta`. Deux façons de les transmettre :
 
 1. via l'objet `custom_fields` du plugin (aucune configuration, voir §6) ;
-2. en les ajoutant à la liste des clés déclarées dans *Réglages → Custom CPT Manager*, si vous préférez tout passer par `meta`.
+2. en les ajoutant à la liste des clés déclarées dans *Réglages → JobAffinity CPT Manager*, si vous préférez tout passer par `meta`.
 
 ---
 
@@ -249,7 +263,7 @@ Envoyer `null` comme valeur, dans l'un ou l'autre canal :
 
 Si l'option **Articles natifs** est cochée (par défaut), les mêmes clés sont également déclarées sur le post type `post` : `POST /wp-json/wp/v2/posts` avec un objet `meta` fonctionne à l'identique. L'objet `custom_fields`, lui, n'existe que sur le CPT.
 
-L'option **Interception API REST** (désactivée par défaut) bascule automatiquement vers le CPT toute offre créée sur `/wp/v2/posts` contenant un `job_id` — pendant REST de l'interception XML-RPC décrite au §4.
+L'option **Interception API REST** (désactivée par défaut) bascule automatiquement vers le CPT toute offre créée sur `/wp/v2/posts` contenant un `job_id` — le pendant REST de l'interception XML-RPC décrite au §4.
 
 ---
 
@@ -340,7 +354,7 @@ $query = new WP_Query( array(
 
 ## 8. Tester l'intégration
 
-1. Dans JobAffinity, allez dans **Admin > Publications**, ajoutez votre source WordPress avec les identifiants du compte `jobaffinity`.
+1. Dans JobAffinity, allez dans **Admin > Publications**, ajoutez votre source WordPress avec le compte `jobaffinity`, son mot de passe d'application et la clé du CPT dans **Type de contenu**.
 2. Publiez une offre test.
 3. Dans WordPress, allez dans **Offres > Toutes les offres**. L'offre doit apparaître.
 4. Ouvrez l'offre et scrollez jusqu'à la metabox **Champs personnalisés** : tous les `job_*` et `custom_*` doivent être présents.
@@ -361,9 +375,9 @@ $query = new WP_Query( array(
 
 ### « Les offres apparaissent dans Articles et non dans Offres »
 
-L'option d'interception XML-RPC n'est pas activée. Allez dans **Réglages > Custom CPT Manager** et cochez **Rediriger automatiquement les publications JobAffinity (XML-RPC) vers ce CPT**.
+Le champ **Type de contenu** de la source JobAffinity est resté sur `post`. Corrigez-le en priorité (section 4) : c'est la cause la plus fréquente.
 
-Si l'option est activée et que le problème persiste :
+À défaut, activez l'interception correspondant à votre canal dans **Réglages > JobAffinity CPT Manager**. Si elle est déjà active et que le problème persiste :
 
 - Vérifiez dans les offres déjà présentes dans *Articles* qu'elles contiennent bien la meta `job_id` (sans cette meta, le plugin ne les identifie pas comme JobAffinity).
 - Les articles publiés **avant** l'activation de l'option restent dans *Articles*. Pour les migrer, utilisez WP-CLI :
@@ -375,9 +389,11 @@ Si l'option est activée et que le problème persiste :
 
 Consultez l'article [J'ai une erreur de publication sur mon site WordPress](https://help.jobaffinity.fr/fr/articles/) de JobAffinity. Les causes les plus fréquentes :
 
-- Plugin de sécurité (Wordfence, iThemes Security) qui bloque XML-RPC : ajoutez une exception pour l'IP JobAffinity ou autorisez `xmlrpc.php`.
-- Mot de passe incorrect : régénérez-le côté WordPress et mettez à jour la source JobAffinity.
+- Extension de sécurité (Wordfence, iThemes Security, Disable REST API) qui restreint `/wp-json/` : ajoutez une exception plutôt que d'ouvrir l'API entièrement.
+- En-tête HTTP `Authorization` filtré par l'hébergeur : sans lui, le mot de passe d'application n'atteint jamais WordPress.
+- Mot de passe incorrect : régénérez le mot de passe d'application côté WordPress et mettez à jour la source JobAffinity.
 - Rôle insuffisant : le compte doit être au minimum Auteur.
+- En XML-RPC : `xmlrpc.php` bloqué par l'extension de sécurité. Plutôt que d'y ajouter une exception, basculez la source sur l'API REST.
 
 ### « L'offre est créée (201) mais les champs envoyés dans `meta` sont absents »
 
@@ -386,7 +402,7 @@ C'est **le** piège de l'API REST : WordPress refuse d'écrire une clé `meta` q
 Le plugin déclare pour vous les 22 clés JobAffinity (§5). Si une clé manque — typiquement un champ `custom_*` propre à votre configuration :
 
 1. listez ce que l'API expose réellement avec la commande `OPTIONS` du §8 ;
-2. ajoutez la clé manquante dans *Réglages → Custom CPT Manager*, champ **Champs supplémentaires** (une clé par ligne ; le socle des 22 clés JobAffinity reste déclaré quoi qu'il arrive) ;
+2. ajoutez la clé manquante dans *Réglages → JobAffinity CPT Manager*, champ **Champs supplémentaires** (une clé par ligne ; le socle des 22 clés JobAffinity reste déclaré quoi qu'il arrive) ;
 3. ou envoyez-la via `custom_fields`, qui accepte n'importe quelle clé sans déclaration préalable.
 
 ### « Erreur `rest_invalid_type` sur `meta.job_salary_min` »
@@ -427,11 +443,11 @@ wp option delete ccptm_settings
 ## Annexe — Schéma d'intégration
 
 ```
-┌─────────────────┐   XML-RPC (jobaffinity.php)   ┌──────────────────────┐
+┌─────────────────┐  POST /wp-json/wp/v2/offer   ┌──────────────────────┐
 │                 │──────────────────────────────▶│                      │
-│   JobAffinity   │                               │  WordPress + plugin  │
-│                 │◀──────────────────────────────│  Custom CPT Manager  │
-└─────────────────┘          réponse OK           └──────────┬───────────┘
+│   JobAffinity   │   (mot de passe d'application)│  WordPress + plugin  │
+│                 │◀──────────────────────────────│  JobAffinity CPT Mgr │
+└─────────────────┘          201 Created          └──────────┬───────────┘
                                                              │
                                                              ▼
                                                    ┌──────────────────────┐
