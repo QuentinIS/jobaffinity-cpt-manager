@@ -43,7 +43,7 @@ format) and, in French, in
 ## Architecture
 
 ```
-jobaffinity-cpt-manager.php       Bootstrap, activation, i18n
+jobaffinity-cpt-manager.php       Bootstrap, activation
 includes/
   class-ccptm-settings.php        Options, validation, migration
   class-ccptm-cpt.php             Post type registration (init, priority 5)
@@ -52,7 +52,8 @@ includes/
   class-ccptm-xmlrpc.php          XML-RPC interception
   class-ccptm-admin.php           Settings screen
 uninstall.php                     Per-site cleanup, content left untouched
-languages/                        .pot, and the bundled French translation
+languages/                        .pot template only; locales come from
+                                  translate.wordpress.org
 ```
 
 `plugins_loaded` instantiates the classes in order; `CCPTM_Settings::maybe_migrate()`
@@ -171,18 +172,23 @@ route.
 WordPress runs in Docker; nothing is installed on the host.
 
 ```bash
-# Regenerate the translation template and compile the French catalogue
+# Regenerate the translation template
 docker run --rm -u "$(id -u):$(id -g)" -v "$PWD":/app -w /app wordpress:cli \
   wp i18n make-pot . languages/jobaffinity-cpt-manager.pot \
     --slug=jobaffinity-cpt-manager --domain=jobaffinity-cpt-manager \
     --exclude=node_modules,.github,.wordpress-org
-docker run --rm -u "$(id -u):$(id -g)" -v "$PWD":/app -w /app wordpress:cli \
-  wp i18n make-mo languages/
 
 # Syntax check
 docker run --rm -v "$PWD":/app -w /app php:8.2-cli \
   sh -c 'for f in *.php includes/*.php; do php -l "$f"; done'
 ```
+
+Only the `.pot` lives in this repository. Catalogues are **not** bundled: a
+directory-hosted plugin gets them from
+[translate.wordpress.org](https://translate.wordpress.org/), which WordPress has
+loaded automatically from `WP_LANG_DIR/plugins/` since 4.6 — hence no
+`load_plugin_textdomain()` call either. Translate French, or any other locale,
+on translate.wordpress.org rather than committing a `.po` here.
 
 Coding standards (`phpcs.xml.dist`) and the WordPress Plugin Check run in CI;
 see `.github/workflows/lint.yml`.

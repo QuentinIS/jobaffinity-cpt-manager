@@ -78,31 +78,6 @@ function ccptm_deactivate() {
 register_deactivation_hook( __FILE__, 'ccptm_deactivate' );
 
 /**
- * Loads the translations bundled in /languages.
- *
- * Plugin Check flags load_plugin_textdomain() as unnecessary since WordPress
- * 4.6, which only holds for catalogues downloaded into WP_LANG_DIR/plugins/.
- * Automatic loading of a bundled /languages directory, through the Domain
- * Path header, only arrived in WordPress 6.2. This plugin declares
- * "Requires at least: 5.6" and ships its own French catalogue, so the call
- * is still needed.
- *
- * On "init" priority 0 rather than "plugins_loaded": since WordPress 6.7,
- * loading a text domain before "init" triggers a
- * _load_textdomain_just_in_time notice. Priority 0 still runs ahead of
- * CCPTM_CPT::register_cpt() (init, priority 5), the first consumer of
- * translated strings.
- */
-function ccptm_load_textdomain() {
-	load_plugin_textdomain(
-		'jobaffinity-cpt-manager',
-		false,
-		dirname( plugin_basename( CCPTM_PLUGIN_FILE ) ) . '/languages'
-	);
-}
-add_action( 'init', 'ccptm_load_textdomain', 0 );
-
-/**
  * Bootstrap: instantiate the plugin's classes.
  */
 function ccptm_bootstrap() {

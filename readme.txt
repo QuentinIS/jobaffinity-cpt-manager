@@ -88,7 +88,7 @@ No. It makes no outbound HTTP request at all. Communication is one-way: JobAffin
 
 = 1.4.0 =
 * First WordPress.org release.
-* Interface translated to English; the French translation is bundled.
+* Interface translated to English; translations are delivered through translate.wordpress.org.
 * Added `uninstall.php`, which removes the plugin's settings and transients per site on a network, and deliberately leaves content alone.
 * Fixed the declared post type list on the settings screen rendering escaped HTML entities instead of markup.
 * Hardened input handling on the settings form.
@@ -106,4 +106,4 @@ No. It makes no outbound HTTP request at all. Communication is one-way: JobAffin
 == Upgrade Notice ==
 
 = 1.4.0 =
-The admin interface is now in English, with French supplied as a translation. Settings and content are unaffected.
+The admin interface is now in English; translations are delivered by WordPress.org. Settings and content are unaffected.
