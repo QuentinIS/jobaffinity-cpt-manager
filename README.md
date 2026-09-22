@@ -238,6 +238,26 @@ Releases are then tag-driven. `Version` in the plugin header, `Stable tag` in
 git tag 1.4.0 && git push origin 1.4.0
 ```
 
+### Building the submission zip
+
+Until the plugin is approved there is no SVN repository and no deploy workflow
+to build from, so the zip uploaded to "Add your plugin" is built by hand. Never
+zip the working copy: the uploader rejects `.gitignore`, `.editorconfig`,
+`.distignore`, `phpcs.xml.dist`, `.github/` and any markdown file other than
+`readme.txt` in the plugin root. `.distignore` already lists all of them, so
+build through it and the archive comes out clean:
+
+```bash
+rm -rf /tmp/dist && mkdir -p /tmp/dist/jobaffinity-cpt-manager
+rsync -a --exclude-from=.distignore ./ /tmp/dist/jobaffinity-cpt-manager/
+(cd /tmp/dist && zip -rqX ~/jobaffinity-cpt-manager-1.4.0.zip jobaffinity-cpt-manager)
+unzip -l ~/jobaffinity-cpt-manager-1.4.0.zip
+```
+
+The plugin directory must sit at the root of the archive, so the `zip` runs
+from the parent of the build tree and never from inside it. The listing should
+show 11 files and nothing beginning with a dot.
+
 ## License
 
 GPL-2.0-or-later. See [LICENSE](LICENSE).
