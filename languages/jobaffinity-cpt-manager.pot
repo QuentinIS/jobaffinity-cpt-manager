@@ -2,14 +2,14 @@
 # This file is distributed under the GPL-2.0-or-later.
 msgid ""
 msgstr ""
-"Project-Id-Version: JobAffinity CPT Manager 1.4.0\n"
+"Project-Id-Version: JobAffinity CPT Manager 1.5.0\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/jobaffinity-cpt-manager\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-09-21T12:52:31+00:00\n"
+"POT-Creation-Date: 2026-09-23T14:56:38+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: jobaffinity-cpt-manager\n"
@@ -43,7 +43,7 @@ msgid "https://www.intuition-software.com/"
 msgstr ""
 
 #: includes/class-ccptm-admin.php:62
-#: includes/class-ccptm-admin.php:446
+#: includes/class-ccptm-admin.php:462
 msgid "Access denied."
 msgstr ""
 
@@ -220,50 +220,58 @@ msgid "The post type key (%1$s) and the REST route base (%2$s) differ on purpose
 msgstr ""
 
 #: includes/class-ccptm-admin.php:379
-msgid "Creating an offer: the \"meta\" object (recommended)"
+msgid "Creating an offer: the \"easyposting_fields\" object (JobAffinity)"
 msgstr ""
 
 #: includes/class-ccptm-admin.php:381
+msgid "The channel JobAffinity publishes through. The field names travel with the values, so nothing has to be declared. Only job_*, custom_* and apply_url keys are written, at most 100 per request. Each publication carries the complete set of fields: a job_*, custom_* or apply_url key absent from the payload is deleted from the post."
+msgstr ""
+
+#: includes/class-ccptm-admin.php:395
+msgid "Creating an offer: the \"meta\" object"
+msgstr ""
+
+#: includes/class-ccptm-admin.php:397
 msgid "The standard WordPress REST API channel. It only works for the keys declared above: the JobAffinity set and your additional fields."
 msgstr ""
 
-#: includes/class-ccptm-admin.php:400
+#: includes/class-ccptm-admin.php:416
 msgid "Declared keys go through \"meta\"; free-form, multi-valued or null-deleted keys go through \"custom_fields\". If the same key arrives through both, the \"custom_fields\" value wins."
 msgstr ""
 
-#: includes/class-ccptm-admin.php:403
+#: includes/class-ccptm-admin.php:419
 msgid "Authentication is required: application password, JWT or cookie nonce. The user must have editing rights on the post type."
 msgstr ""
 
-#: includes/class-ccptm-admin.php:406
+#: includes/class-ccptm-admin.php:422
 msgid "Currently declared fields"
 msgstr ""
 
 #. translators: 1: total number of keys, 2: required keys, 3: additional keys
-#: includes/class-ccptm-admin.php:411
+#: includes/class-ccptm-admin.php:427
 #, php-format
 msgid "%1$d keys (%2$d required + %3$d additional), declared on:"
 msgstr ""
 
 #. translators: %s: the command to run
-#: includes/class-ccptm-admin.php:424
+#: includes/class-ccptm-admin.php:440
 #, php-format
 msgid "To check what the API actually exposes: %s"
 msgstr ""
 
-#: includes/class-ccptm-admin.php:430
+#: includes/class-ccptm-admin.php:446
 msgid "Roles allowed to manage the post type"
 msgstr ""
 
-#: includes/class-ccptm-admin.php:432
+#: includes/class-ccptm-admin.php:448
 msgid "Administrator: full access."
 msgstr ""
 
-#: includes/class-ccptm-admin.php:433
+#: includes/class-ccptm-admin.php:449
 msgid "Editor: create, edit and publish all content."
 msgstr ""
 
-#: includes/class-ccptm-admin.php:434
+#: includes/class-ccptm-admin.php:450
 msgid "Author: create and manage their own content."
 msgstr ""
 
@@ -347,26 +355,38 @@ msgstr ""
 msgid "%s attributes"
 msgstr ""
 
+#: includes/class-ccptm-easyposting.php:123
+msgid "Complete set of JobAffinity fields for the offer. Absent keys are deleted."
+msgstr ""
+
+#: includes/class-ccptm-easyposting.php:145
+#: includes/class-ccptm-rest.php:186
+msgid "The field must be an object of key/value pairs."
+msgstr ""
+
+#. translators: %d: maximum number of keys
+#: includes/class-ccptm-easyposting.php:156
+#, php-format
+msgid "At most %d keys are accepted."
+msgstr ""
+
+#: includes/class-ccptm-easyposting.php:169
+#: includes/class-ccptm-rest.php:201
+msgid "You are not allowed to edit this post."
+msgstr ""
+
 #. translators: %s: the custom field key
 #: includes/class-ccptm-meta.php:257
 #, php-format
 msgid "Custom field \"%s\", declared by JobAffinity CPT Manager."
 msgstr ""
 
-#: includes/class-ccptm-rest.php:99
+#: includes/class-ccptm-rest.php:107
 msgid "Custom fields (meta) attached to the post."
 msgstr ""
 
-#: includes/class-ccptm-rest.php:115
+#: includes/class-ccptm-rest.php:123
 msgid "Write alias for custom_fields."
-msgstr ""
-
-#: includes/class-ccptm-rest.php:177
-msgid "The field must be an object of key/value pairs."
-msgstr ""
-
-#: includes/class-ccptm-rest.php:192
-msgid "You are not allowed to edit this post."
 msgstr ""
 
 #: includes/class-ccptm-settings.php:97
@@ -397,10 +417,10 @@ msgstr ""
 msgid "The REST route base \"%1$s\" is already used by the \"%2$s\" taxonomy."
 msgstr ""
 
-#: jobaffinity-cpt-manager.php:122
+#: jobaffinity-cpt-manager.php:126
 msgid "JobAffinity CPT Manager: please configure the custom post type key. "
 msgstr ""
 
-#: jobaffinity-cpt-manager.php:123
+#: jobaffinity-cpt-manager.php:127
 msgid "Open settings"
 msgstr ""

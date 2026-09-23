@@ -74,7 +74,7 @@ Dans JobAffinity, **Admin > Publications**, éditez votre source WordPress :
 - **Identifiant** / **Mot de passe** : le compte `jobaffinity` et son mot de passe d'application (section 3)
 - **Type de contenu** : la clé du CPT, `offer` par exemple
 
-JobAffinity publie alors directement sur `/wp-json/wp/v2/offer`. Aucune interception n'est nécessaire, et les champs libres `custom_*` passent par l'objet `custom_fields` du plugin (section 6).
+JobAffinity publie alors directement sur `/wp-json/wp/v2/offer`. Aucune interception n'est nécessaire, et tous les champs, `job_*` comme `custom_*`, passent par l'objet `easyposting_fields` du plugin, sans rien déclarer (section 5).
 
 ### Le repli — interception d'un flux qui vise encore `post`
 
@@ -103,6 +103,36 @@ XML-RPC reste pris en charge pour les connexions antérieures à l'arrivée de R
 ---
 
 ## 5. Champs personnalisés transmis par JobAffinity
+
+### Le canal `easyposting_fields` (depuis la version 1.5.0)
+
+JobAffinity envoie désormais les noms des champs avec leurs valeurs, dans un seul objet `easyposting_fields`. Le plugin écrit lui-même les champs personnalisés : **aucune clé n'a besoin d'être déclarée**, et un attribut ajouté côté JobAffinity apparaît à la publication suivante sans configuration.
+
+Garde-fous :
+
+- seules les clés `job_*`, `custom_*` et `apply_url` sont écrites (minuscules, chiffres et `_`, 50 caractères après le préfixe). Les champs d'autres extensions (`_yoast_*`, ACF, WooCommerce…) et les meta protégées (`_edit_lock`, `_thumbnail_id`…) sont hors d'atteinte ;
+- 100 clés au maximum : un envoi plus gros, ou qui n'est pas un objet, est refusé (400) **avant** la création de l'offre ;
+- l'utilisateur doit pouvoir éditer l'offre, comme pour tout autre canal.
+
+**Clés absentes = clés supprimées.** Chaque publication porte l'état complet de l'offre, et une valeur vide n'est pas envoyée du tout. Après chaque écriture, le plugin supprime donc les clés `job_*`, `custom_*` et `apply_url` absentes de l'envoi : un champ vidé chez JobAffinity disparaît aussi du site. Ce balayage n'a lieu que si la requête contient `easyposting_fields` ; une modification faite depuis l'admin WordPress n'en déclenche aucun.
+
+> **Attention** : si votre site écrit lui-même des champs `job_*` ou `custom_*` par un autre moyen (extension, import, code du thème), ils seront effacés à la publication suivante. Désactivez le balayage, ou épargnez ces clés, avec un filtre :
+>
+> ```php
+> // Désactiver complètement le balayage
+> add_filter( 'ccptm_easyposting_sweep', '__return_false' );
+>
+> // Ou épargner certaines clés
+> add_filter( 'ccptm_easyposting_sweep_keys', function ( $keys ) {
+>     return array_diff( $keys, array( 'job_note_interne' ) );
+> } );
+> ```
+
+`easyposting_fields` n'apparaît jamais dans les réponses de l'API. Le thème lit les valeurs avec `get_post_meta()`, comme avant.
+
+### Les anciens canaux, toujours pris en charge
+
+Les connexions existantes qui publient par `meta` ou `custom_fields` continuent de fonctionner sans changement. Ce qui suit les concerne.
 
 JobAffinity envoie les meta suivantes, toutes conservées par le plugin et accessibles en lecture/écriture via l'API REST.
 
@@ -167,19 +197,18 @@ POST /wp-json/wp/v2/offer              Création (authentification requise)
 POST /wp-json/wp/v2/offer/{id}         Mise à jour (authentification requise)
 ```
 
-### Deux canaux d'écriture
+### Trois canaux d'écriture
 
-| | `meta` | `custom_fields` |
-|---|---|---|
-| Standard WordPress | oui | non (spécifique au plugin) |
-| Clés acceptées | uniquement les clés déclarées | n'importe quelle clé |
-| Valeurs multiples | non (`single => true`) | oui (tableau indexé) |
-| Suppression par `null` | oui | oui |
-| Disponible sur `/wp/v2/posts` | oui (si l'option est cochée) | non |
+| | `easyposting_fields` | `meta` | `custom_fields` |
+|---|---|---|---|
+| Utilisé par | JobAffinity (1.5.0+) | clients REST génériques | anciennes intégrations |
+| Standard WordPress | non (spécifique au plugin) | oui | non (spécifique au plugin) |
+| Clés acceptées | `job_*`, `custom_*`, `apply_url` | uniquement les clés déclarées | n'importe quelle clé |
+| Valeurs multiples | non | non (`single => true`) | oui (tableau indexé) |
+| Suppression | clé absente de l'envoi | `null` | `null` |
+| Disponible sur `/wp/v2/posts` | oui (si l'option est cochée) | oui (si l'option est cochée) | non |
 
-**Utilisez `meta`** pour les clés déclarées : c'est le canal standard, celui qu'attendent les clients REST génériques. **Utilisez `custom_fields`** pour tout le reste : clés libres `custom_*`, valeurs multiples.
-
-Si la même clé arrive par les deux canaux dans une même requête, c'est la valeur de `custom_fields` qui est conservée (WordPress écrit `meta` en premier, puis les champs additionnels du plugin).
+Si la même clé arrive par plusieurs canaux dans une même requête, c'est le dernier écrit qui l'emporte, dans l'ordre `meta`, `custom_fields`, `easyposting_fields`.
 
 ### Base de route personnalisable
 
@@ -187,7 +216,7 @@ Par défaut, la route REST reprend la clé du CPT. Le réglage **Base de route A
 
 ### Lecture des champs personnalisés
 
-Chaque réponse inclut l'objet `meta` (clés déclarées) et l'objet `custom_fields` qui rassemble toutes les meta non protégées :
+Chaque réponse inclut l'objet `meta` (clés déclarées) et l'objet `custom_fields` qui rassemble toutes les meta non protégées. Depuis la version 1.5.0, `custom_fields` n'est rempli que pour un utilisateur authentifié qui peut éditer l'offre ; une lecture anonyme reçoit `{}`, pour qu'un champ `custom_*` sensible (une marge, par exemple) ne soit pas publié :
 
 ```json
 {
@@ -220,7 +249,7 @@ curl -X POST https://votre-site.fr/wp-json/wp/v2/offer \
     "title": "Vendeur H/F - Picard Versailles",
     "content": "<p>Description du poste...</p>",
     "status": "publish",
-    "meta": {
+    "easyposting_fields": {
       "job_id": "1023736",
       "job_client": "136 - PAROISSE",
       "job_client_remote_id": "643",
@@ -230,15 +259,15 @@ curl -X POST https://votre-site.fr/wp-json/wp/v2/offer \
       "job_entity": "Picard",
       "job_latitude": "48.8036",
       "job_salary_min": "28000",
-      "job_link": "https://jobaffinity.fr/apply/976itcfhzqxldumwbv"
-    },
-    "custom_fields": {
+      "job_link": "https://jobaffinity.fr/apply/976itcfhzqxldumwbv",
       "custom_filiere_metier": "Magasins",
       "custom_regions": "YVELINES SUD",
       "custom_temps_de_travail": "Temps plein"
     }
   }'
 ```
+
+Avec les anciens canaux, la même offre s'envoie en répartissant les clés déclarées dans `meta` et les `custom_*` dans `custom_fields`.
 
 L'authentification recommandée est **Application Passwords** (*Utilisateurs > Profil > Mots de passe d'application*, natif WordPress 5.6+).
 
@@ -397,6 +426,8 @@ Consultez l'article [J'ai une erreur de publication sur mon site WordPress](http
 
 ### « L'offre est créée (201) mais les champs envoyés dans `meta` sont absents »
 
+Ce piège ne concerne que l'objet `meta`. Avec `easyposting_fields`, aucune déclaration n'est nécessaire ; vérifiez plutôt que la clé respecte le format `job_*`, `custom_*` ou `apply_url`, en minuscules.
+
 C'est **le** piège de l'API REST : WordPress refuse d'écrire une clé `meta` qui n'a pas été déclarée côté serveur, et il la refuse **sans erreur**. On reçoit un `201 Created`, le post existe, et les champs ont disparu.
 
 Le plugin déclare pour vous les 22 clés JobAffinity (§5). Si une clé manque — typiquement un champ `custom_*` propre à votre configuration :
@@ -415,7 +446,11 @@ Le plugin convertit automatiquement les nombres et booléens en chaînes avant v
 
 ### « Les champs personnalisés ne remontent pas dans `custom_fields` »
 
-`custom_fields` retourne toutes les meta non protégées sans configuration préalable, mais il n'existe **que sur le CPT** : sur `/wp/v2/posts`, seul l'objet `meta` est disponible.
+`custom_fields` retourne toutes les meta non protégées sans configuration préalable, mais il n'existe **que sur le CPT** : sur `/wp/v2/posts`, seul l'objet `meta` est disponible. Depuis la version 1.5.0, il est aussi vide pour une lecture anonyme : authentifiez la requête avec un compte qui peut éditer l'offre.
+
+### « Un champ a disparu de l'offre après une publication »
+
+C'est le balayage de `easyposting_fields` (§5) : la clé n'était pas dans l'envoi, parce que la valeur a été vidée ou le champ retiré côté JobAffinity. Si la clé est écrite par un autre moyen sur votre site, utilisez le filtre `ccptm_easyposting_sweep` ou `ccptm_easyposting_sweep_keys`.
 
 ### « Les URLs dans `job_link` sont cassées (`&` transformés en `&amp;`) »
 

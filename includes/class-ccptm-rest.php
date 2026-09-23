@@ -25,14 +25,22 @@ if ( ! defined( 'ABSPATH' ) ) {
  * the escape hatch for everything else: undeclared keys (the custom_* ones that
  * differ per client), multiple values, deletion by null.
  *
+ * Since 1.5.0 JobAffinity publishes through "easyposting_fields" instead (see
+ * CCPTM_Easyposting). Everything here is kept for sites and flows that still
+ * use the older channels.
+ *
  * The write order within one request, imposed by WP_REST_Posts_Controller
  * (update_value(), then update_additional_fields_for_object(), which iterates
  * in registration order):
  *
- *     meta  ->  custom_fields  ->  meta_input
+ *     meta  ->  custom_fields  ->  meta_input  ->  easyposting_fields
  *
  * Last write wins: when the same key arrives through several channels, the
- * meta_input value, then the custom_fields one, beats meta.
+ * later channel beats the earlier ones.
+ *
+ * Reading "custom_fields" requires edit_post on the post: every unprotected
+ * meta is returned, and a free-form custom_* key may hold anything, such as a
+ * margin, that must not be published to anonymous visitors.
  */
 class CCPTM_REST {
 
@@ -121,14 +129,15 @@ class CCPTM_REST {
 	}
 
 	/**
-	 * GET: returns the custom fields, meaning every unprotected meta.
+	 * GET: returns the custom fields, meaning every unprotected meta, to users
+	 * who can edit the post. Everyone else gets an empty object.
 	 *
 	 * @param array $post_array Post data prepared by the controller.
 	 * @return stdClass
 	 */
 	public function read_custom_fields( $post_array ) {
 		$post_id = isset( $post_array['id'] ) ? (int) $post_array['id'] : 0;
-		if ( ! $post_id ) {
+		if ( ! $post_id || ! current_user_can( 'edit_post', $post_id ) ) {
 			return new stdClass();
 		}
 
@@ -329,14 +338,14 @@ class CCPTM_REST {
 
 	/**
 	 * The JobAffinity signature: a job_id, through whichever channel (standard
-	 * meta, custom_fields or meta_input). Same criterion as
+	 * meta, custom_fields, meta_input or easyposting_fields). Same criterion as
 	 * CCPTM_XMLRPC::looks_like_jobaffinity().
 	 *
 	 * @param WP_REST_Request $request The incoming request.
 	 * @return bool
 	 */
 	private function looks_like_jobaffinity( $request ) {
-		foreach ( array( 'meta', 'custom_fields', 'meta_input' ) as $param ) {
+		foreach ( array( 'meta', 'custom_fields', 'meta_input', CCPTM_Easyposting::FIELD ) as $param ) {
 			$value = $request->get_param( $param );
 
 			if ( is_object( $value ) ) {

@@ -376,7 +376,23 @@ class CCPTM_Admin {
 					</p>
 				<?php endif; ?>
 
-				<h3><?php esc_html_e( 'Creating an offer: the "meta" object (recommended)', 'jobaffinity-cpt-manager' ); ?></h3>
+				<h3><?php esc_html_e( 'Creating an offer: the "easyposting_fields" object (JobAffinity)', 'jobaffinity-cpt-manager' ); ?></h3>
+				<p class="description">
+					<?php esc_html_e( 'The channel JobAffinity publishes through. The field names travel with the values, so nothing has to be declared. Only job_*, custom_* and apply_url keys are written, at most 100 per request. Each publication carries the complete set of fields: a job_*, custom_* or apply_url key absent from the payload is deleted from the post.', 'jobaffinity-cpt-manager' ); ?>
+				</p>
+<pre style="background:#f6f7f7;padding:12px;border:1px solid #dcdcde;overflow:auto;">POST <?php echo esc_html( $base ); ?>
+
+{
+	"title": "Vendeur H/F - Versailles",
+	"status": "publish",
+	"easyposting_fields": {
+	"job_id": "1023736",
+	"job_contract_type": "CDI",
+	"custom_regions": "YVELINES SUD"
+	}
+}</pre>
+
+				<h3><?php esc_html_e( 'Creating an offer: the "meta" object', 'jobaffinity-cpt-manager' ); ?></h3>
 				<p class="description">
 					<?php esc_html_e( 'The standard WordPress REST API channel. It only works for the keys declared above: the JobAffinity set and your additional fields.', 'jobaffinity-cpt-manager' ); ?>
 				</p>

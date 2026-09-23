@@ -4,7 +4,7 @@ Tags: job board, recruitment, custom post type, rest api, xml-rpc
 Requires at least: 5.6
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.4.0
+Stable tag: 1.5.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -21,15 +21,18 @@ JobAffinity is a recruitment platform (applicant tracking system) published by [
 = What it does =
 
 * Registers one configurable custom post type that behaves exactly like native posts: same capabilities, same editor, categories and tags, featured image, revisions, block editor support.
+* Accepts the `easyposting_fields` REST field JobAffinity publishes through: the field names travel with the values, so nothing has to be declared, and fields removed on the JobAffinity side are removed from the offer.
 * Declares the 22 job fields JobAffinity sends (`job_id`, `job_link`, `job_contract_type`, salary, location, and the rest) through `register_post_meta()`, so they work in the standard `meta` object of the REST API.
 * Accepts any additional meta keys you configure, alongside the required set.
 * Adds a `custom_fields` REST field for keys that are not declared, hold several values, or need deleting — including the `custom_*` fields JobAffinity forwards from your own configuration.
 * Optionally re-routes incoming XML-RPC and REST publications that carry a `job_id` meta from `post` to your custom post type. Ordinary posts on your blog are untouched, and updates to existing posts are never re-routed.
 * Lets the REST route base differ from the post type key, so `/wp/v2/offer` can serve a post type keyed `offer-intern`.
 
-= Two write channels =
+= Three write channels =
 
-Declared keys go through the standard `meta` object. Everything else — free-form keys, multi-valued keys, deletions — goes through `custom_fields`. If the same key arrives through both, `custom_fields` wins.
+JobAffinity publishes through `easyposting_fields`, a write-only object carrying the complete set of the offer's fields. Only `job_*`, `custom_*` and `apply_url` keys are written, never protected meta, and at most 100 per request. Because every publication carries the full state and empty values are omitted, any `job_*`, `custom_*` or `apply_url` key the payload no longer carries is deleted from the post. That sweep only happens when the request contains `easyposting_fields`: editing an offer in the admin never triggers it.
+
+The older channels remain supported for existing connections. Declared keys go through the standard `meta` object. Everything else — free-form keys, multi-valued keys, deletions — goes through `custom_fields`. Within one request the channels are written in the order `meta`, `custom_fields`, `easyposting_fields`; the last one wins.
 
 This matters because WordPress silently ignores undeclared keys inside `meta`: the request still answers 201, but the field is lost. The settings screen lists exactly which keys are currently declared.
 
@@ -38,6 +41,8 @@ This matters because WordPress silently ignores undeclared keys inside `meta`: t
 * `ccptm_meta_keys` — the full list of declared meta keys.
 * `ccptm_meta_post_types` — the post types those keys are declared on.
 * `ccptm_sanitize_meta_value` — the sanitisation applied to an incoming value.
+* `ccptm_easyposting_sweep` — return `false` to stop deleting absent keys, for a site that writes `job_*` or `custom_*` keys by other means.
+* `ccptm_easyposting_sweep_keys` — remove keys from the list the sweep is about to delete.
 
 Source code and issue tracker: [github.com/QuentinIS/jobaffinity-cpt-manager](https://github.com/QuentinIS/jobaffinity-cpt-manager)
 
@@ -86,6 +91,13 @@ No. It makes no outbound HTTP request at all. Communication is one-way: JobAffin
 
 == Changelog ==
 
+= 1.5.0 =
+* New `easyposting_fields` REST field: JobAffinity sends the field names with their values, so no key has to be declared any more. Keys are restricted to `job_*`, `custom_*` and `apply_url`, protected meta is never written, and payloads are capped at 100 keys and rejected before the post is created.
+* Keys in that namespace which a publication no longer carries are deleted. Filters `ccptm_easyposting_sweep` and `ccptm_easyposting_sweep_keys` turn this off or narrow it.
+* REST interception also recognises offers sent through `easyposting_fields`.
+* `custom_fields` is now only returned to users who can edit the post; anonymous REST readers get an empty object.
+* The `meta` and `custom_fields` channels and XML-RPC are unchanged.
+
 = 1.4.0 =
 * First WordPress.org release.
 * Interface translated to English; translations are delivered through translate.wordpress.org.
@@ -104,6 +116,9 @@ No. It makes no outbound HTTP request at all. Communication is one-way: JobAffin
 * Released privately, before the plugin was published on WordPress.org.
 
 == Upgrade Notice ==
+
+= 1.5.0 =
+Adds the channel JobAffinity now publishes through. Existing connections keep working. The `custom_fields` REST field is no longer readable anonymously: a front end reading it without authentication should use `meta` or authenticate.
 
 = 1.4.0 =
 The admin interface is now in English; translations are delivered by WordPress.org. Settings and content are unaffected.

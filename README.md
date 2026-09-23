@@ -46,6 +46,11 @@ on the old post type. See [Changing the post type key](#changing-the-post-type-k
 - **Decoupled REST route base.** The route may differ from the post type key —
   a post type keyed `offer-intern` can be served at `/wp/v2/offer` — with
   collision detection against core routes, other post types and taxonomies.
+- **`easyposting_fields`, the JobAffinity channel.** One write-only REST field
+  carries the complete set of fields with their names, so nothing has to be
+  declared: a key added on the JobAffinity side arrives with the next
+  publication. Keys in the plugin's namespace that the payload no longer carries
+  are deleted.
 - **22 JobAffinity keys always declared** through `register_post_meta()`, so
   they work in the standard `meta` object. Settings add keys on top; they never
   remove the required set.
@@ -59,14 +64,19 @@ on the old post type. See [Changing the post type key](#changing-the-post-type-k
 
 ## Usage
 
-### `meta` or `custom_fields`?
+### Which channel?
 
-|                                 | `meta`                     | `custom_fields`        |
-| ------------------------------- | -------------------------- | ---------------------- |
-| WordPress standard              | yes                        | no, plugin-specific    |
-| Accepted keys                   | declared keys only         | any key                |
-| Multiple values                 | no                         | yes, indexed array     |
-| Available on `/wp/v2/posts`     | yes, if the option is on   | no                     |
+|                             | `easyposting_fields`                  | `meta`                   | `custom_fields`     |
+| --------------------------- | ------------------------------------- | ------------------------ | ------------------- |
+| Used by                     | JobAffinity                           | generic REST clients     | older integrations  |
+| WordPress standard          | no, plugin-specific                   | yes                      | no, plugin-specific |
+| Accepted keys               | `job_*`, `custom_*`, `apply_url`      | declared keys only       | any key             |
+| Multiple values             | no                                    | no                       | yes, indexed array  |
+| Deletion                    | absent key is deleted                 | `null`                   | `null`              |
+| Available on `/wp/v2/posts` | yes, if the option is on              | yes, if the option is on | no                  |
+
+All three stay supported: sites already publishing through `meta` or
+`custom_fields` need no change.
 
 WordPress **silently ignores** an undeclared key sent in `meta`: the request
 answers `201` and the field is lost. That is why the plugin declares the
@@ -77,8 +87,44 @@ curl -X OPTIONS https://example.com/wp-json/wp/v2/offer \
   | python3 -c "import sys,json;print(sorted(json.load(sys.stdin)['schema']['properties']['meta']['properties']))"
 ```
 
-If the same key arrives through both channels in one request, the
-`custom_fields` value wins.
+Within one request the channels are written in the order `meta`,
+`custom_fields`, `meta_input`, `easyposting_fields`: when a key arrives through
+several, the last one wins.
+
+### Create through `easyposting_fields`
+
+```bash
+curl -X POST https://example.com/wp-json/wp/v2/offer \
+  -u "user:xxxx xxxx xxxx xxxx xxxx xxxx" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "title": "Sales assistant - Versailles",
+    "status": "publish",
+    "easyposting_fields": {
+      "job_id": "1023736",
+      "job_contract_type": "CDI",
+      "custom_regions": "YVELINES SUD",
+      "apply_url": "https://example.com/apply/976itcfhzqxldumwbv"
+    }
+  }'
+```
+
+- Keys must match `job_[a-z0-9_]{1,50}`, `custom_[a-z0-9_]{1,50}` or
+  `apply_url`, and must not be protected meta. Anything else is ignored, so
+  `_yoast_*`, ACF or WooCommerce keys are out of reach.
+- Values must be scalars; they are stored as strings. A key with a non-scalar
+  value is skipped and its stored value is left as it was.
+- At most 100 keys. A payload that is not an object, or is larger, is rejected
+  with a `400` **before** the post is created.
+- **Sweep.** Every publication carries the complete state of the offer, and an
+  empty value is omitted rather than sent as `""`. So after writing, every
+  `job_*`, `custom_*` and `apply_url` key the payload did not carry is deleted.
+  The sweep only runs when the request contains `easyposting_fields`: edits made
+  in the admin, or through `meta` or `custom_fields` alone, never trigger it. A
+  site that writes keys in that namespace by other means should turn the sweep
+  off or narrow it with the filters below.
+- The field is write-only and the keys are not declared, so nothing is added to
+  the public REST output. Themes read the values with `get_post_meta()`.
 
 ### Create with declared fields
 
@@ -122,6 +168,9 @@ Send `null` as a value to delete a meta key.
 
 ## Security
 
+- `custom_fields` is only returned to users who can edit the post; anonymous
+  readers get `{}`. It lists every unprotected meta, and a free-form `custom_*`
+  key can hold anything, a margin for instance.
 - Protected meta (underscore-prefixed, such as `_wp_page_template`) is filtered
   out on read and refused on write unless the user explicitly holds the matching
   `edit_post_meta` capability.
@@ -142,7 +191,9 @@ Send `null` as a value to delete a meta key.
 | ---------------------------- | -------------------------------------------------------------------------------------------- |
 | `ccptm_meta_keys`            | Add keys to the declared list. The JobAffinity set is re-injected after the filter and cannot be removed. |
 | `ccptm_meta_post_types`      | Change which post types the declarations are applied to.                                       |
-| `ccptm_sanitize_meta_value`  | Customise the sanitisation of a declared meta value.                                           |
+| `ccptm_sanitize_meta_value`  | Customise the sanitisation of a declared meta value, and of free keys written through `easyposting_fields`. |
+| `ccptm_easyposting_sweep`    | Return `false` to disable the sweep of absent keys. Receives the post ID.                      |
+| `ccptm_easyposting_sweep_keys` | Remove keys from the list the sweep is about to delete. Keys added to it are ignored.       |
 
 ## Operational notes
 
@@ -181,6 +232,7 @@ includes/
   class-ccptm-cpt.php             Post type registration (init, priority 5)
   class-ccptm-meta.php            register_post_meta() declarations
   class-ccptm-rest.php            custom_fields REST field + REST interception
+  class-ccptm-easyposting.php     easyposting_fields REST field + sweep
   class-ccptm-xmlrpc.php          XML-RPC interception
   class-ccptm-admin.php           Settings screen
 uninstall.php                     Per-site cleanup, content left untouched

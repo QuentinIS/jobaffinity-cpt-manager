@@ -3,7 +3,7 @@
  * Plugin Name:       JobAffinity CPT Manager
  * Plugin URI:        https://github.com/QuentinIS/jobaffinity-cpt-manager
  * Description:       Receives job offers pushed by JobAffinity over the REST API or XML-RPC into a dedicated custom post type, with full custom field support.
- * Version:           1.4.0
+ * Version:           1.5.0
  * Requires at least: 5.6
  * Requires PHP:      7.4
  * Author:            Intuition Software
@@ -30,7 +30,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // No direct access.
 }
 
-define( 'CCPTM_VERSION', '1.4.0' );
+define( 'CCPTM_VERSION', '1.5.0' );
 define( 'CCPTM_OPTION_KEY', 'ccptm_settings' );
 define( 'CCPTM_PLUGIN_FILE', __FILE__ );
 define( 'CCPTM_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
@@ -39,6 +39,7 @@ require_once CCPTM_PLUGIN_DIR . 'includes/class-ccptm-settings.php';
 require_once CCPTM_PLUGIN_DIR . 'includes/class-ccptm-cpt.php';
 require_once CCPTM_PLUGIN_DIR . 'includes/class-ccptm-meta.php';
 require_once CCPTM_PLUGIN_DIR . 'includes/class-ccptm-rest.php';
+require_once CCPTM_PLUGIN_DIR . 'includes/class-ccptm-easyposting.php';
 require_once CCPTM_PLUGIN_DIR . 'includes/class-ccptm-xmlrpc.php';
 require_once CCPTM_PLUGIN_DIR . 'includes/class-ccptm-admin.php';
 
@@ -90,6 +91,9 @@ function ccptm_bootstrap() {
 	CCPTM_CPT::instance();
 	CCPTM_Meta::instance();
 	CCPTM_REST::instance();
+	// After CCPTM_REST: registration order is write order, and easyposting_fields
+	// must be written last so its sweep sees the final state of the post.
+	CCPTM_Easyposting::instance();
 	CCPTM_XMLRPC::instance();
 
 	if ( is_admin() ) {
