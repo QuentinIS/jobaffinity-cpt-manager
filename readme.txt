@@ -30,7 +30,7 @@ JobAffinity is a recruitment platform (applicant tracking system) published by [
 
 = Three write channels =
 
-JobAffinity publishes through `easyposting_fields`, a write-only object carrying the complete set of the offer's fields. Only `job_*`, `custom_*` and `apply_url` keys are written, never protected meta, and at most 100 per request. Because every publication carries the full state and empty values are omitted, any `job_*`, `custom_*` or `apply_url` key the payload no longer carries is deleted from the post. That sweep only happens when the request contains `easyposting_fields`: editing an offer in the admin never triggers it.
+JobAffinity publishes through `easyposting_fields`, a write-only object carrying the complete set of the offer's fields in two baskets: `standard` for `job_*` and `apply_url` keys, `custom` for client-defined fields sent without their `custom_` prefix, which the plugin adds. Only `job_*`, `custom_*` and `apply_url` keys are written, never protected meta, and at most 100 per request. Because every publication carries the full state and empty values are omitted, any `job_*`, `custom_*` or `apply_url` key the payload no longer carries is deleted from the post. That sweep only happens when the request contains `easyposting_fields`: editing an offer in the admin never triggers it.
 
 The older channels remain supported for existing connections. Declared keys go through the standard `meta` object. Everything else — free-form keys, multi-valued keys, deletions — goes through `custom_fields`. Within one request the channels are written in the order `meta`, `custom_fields`, `easyposting_fields`; the last one wins.
 
@@ -92,7 +92,7 @@ No. It makes no outbound HTTP request at all. Communication is one-way: JobAffin
 == Changelog ==
 
 = 1.5.0 =
-* New `easyposting_fields` REST field: JobAffinity sends the field names with their values, so no key has to be declared any more. Keys are restricted to `job_*`, `custom_*` and `apply_url`, protected meta is never written, and payloads are capped at 100 keys and rejected before the post is created.
+* New `easyposting_fields` REST field: JobAffinity sends the field names with their values, so no key has to be declared any more. Keys are restricted to `job_*`, `custom_*` and `apply_url`, protected meta is never written, and payloads are capped at 100 keys and rejected before the post is created. Fields arrive in a `standard` and a `custom` basket; `custom` keys are stored with a `custom_` prefix.
 * Keys in that namespace which a publication no longer carries are deleted. Filters `ccptm_easyposting_sweep` and `ccptm_easyposting_sweep_keys` turn this off or narrow it.
 * REST interception also recognises offers sent through `easyposting_fields`.
 * `custom_fields` is now only returned to users who can edit the post; anonymous REST readers get an empty object.

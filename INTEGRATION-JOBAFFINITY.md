@@ -108,10 +108,12 @@ XML-RPC reste pris en charge pour les connexions antérieures à l'arrivée de R
 
 JobAffinity envoie désormais les noms des champs avec leurs valeurs, dans un seul objet `easyposting_fields`. Le plugin écrit lui-même les champs personnalisés : **aucune clé n'a besoin d'être déclarée**, et un attribut ajouté côté JobAffinity apparaît à la publication suivante sans configuration.
 
+L'objet contient deux paniers : `standard`, avec les clés telles qu'elles sont enregistrées (`job_*`, `apply_url`), et `custom`, avec les champs propres au client **sans** leur préfixe, que le plugin ajoute (`regions` est enregistré sous `custom_regions`). Les deux paniers sont fusionnés avant d'appliquer les règles ci-dessous.
+
 Garde-fous :
 
 - seules les clés `job_*`, `custom_*` et `apply_url` sont écrites (minuscules, chiffres et `_`, 50 caractères après le préfixe). Les champs d'autres extensions (`_yoast_*`, ACF, WooCommerce…) et les meta protégées (`_edit_lock`, `_thumbnail_id`…) sont hors d'atteinte ;
-- 100 clés au maximum : un envoi plus gros, ou qui n'est pas un objet, est refusé (400) **avant** la création de l'offre ;
+- 100 clés au maximum, les deux paniers confondus : un envoi plus gros, ou un envoi ou panier qui n'est pas un objet, est refusé (400) **avant** la création de l'offre ;
 - l'utilisateur doit pouvoir éditer l'offre, comme pour tout autre canal.
 
 **Clés absentes = clés supprimées.** Chaque publication porte l'état complet de l'offre, et une valeur vide n'est pas envoyée du tout. Après chaque écriture, le plugin supprime donc les clés `job_*`, `custom_*` et `apply_url` absentes de l'envoi : un champ vidé chez JobAffinity disparaît aussi du site. Ce balayage n'a lieu que si la requête contient `easyposting_fields` ; une modification faite depuis l'admin WordPress n'en déclenche aucun.
@@ -250,19 +252,23 @@ curl -X POST https://votre-site.fr/wp-json/wp/v2/offer \
     "content": "<p>Description du poste...</p>",
     "status": "publish",
     "easyposting_fields": {
-      "job_id": "1023736",
-      "job_client": "136 - PAROISSE",
-      "job_client_remote_id": "643",
-      "job_contract_type": "CDI",
-      "job_address": "76 RUE DE LA PAROISSE",
-      "job_country": "FR",
-      "job_entity": "Picard",
-      "job_latitude": "48.8036",
-      "job_salary_min": "28000",
-      "job_link": "https://jobaffinity.fr/apply/976itcfhzqxldumwbv",
-      "custom_filiere_metier": "Magasins",
-      "custom_regions": "YVELINES SUD",
-      "custom_temps_de_travail": "Temps plein"
+      "standard": {
+        "job_id": "1023736",
+        "job_client": "136 - PAROISSE",
+        "job_client_remote_id": "643",
+        "job_contract_type": "CDI",
+        "job_address": "76 RUE DE LA PAROISSE",
+        "job_country": "FR",
+        "job_entity": "Picard",
+        "job_latitude": "48.8036",
+        "job_salary_min": "28000",
+        "job_link": "https://jobaffinity.fr/apply/976itcfhzqxldumwbv"
+      },
+      "custom": {
+        "filiere_metier": "Magasins",
+        "regions": "YVELINES SUD",
+        "temps_de_travail": "Temps plein"
+      }
     }
   }'
 ```

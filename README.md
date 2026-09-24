@@ -101,21 +101,30 @@ curl -X POST https://example.com/wp-json/wp/v2/offer \
     "title": "Sales assistant - Versailles",
     "status": "publish",
     "easyposting_fields": {
-      "job_id": "1023736",
-      "job_contract_type": "CDI",
-      "custom_regions": "YVELINES SUD",
-      "apply_url": "https://example.com/apply/976itcfhzqxldumwbv"
+      "standard": {
+        "job_id": "1023736",
+        "job_contract_type": "CDI",
+        "apply_url": "https://example.com/apply/976itcfhzqxldumwbv"
+      },
+      "custom": {
+        "regions": "YVELINES SUD"
+      }
     }
   }'
 ```
 
+- Two baskets: `standard` carries keys as they are stored (`job_*`,
+  `apply_url`), `custom` carries the client-defined fields without their
+  prefix, which the plugin adds (`regions` is stored as `custom_regions`).
+  Both are flattened before the rules below apply.
 - Keys must match `job_[a-z0-9_]{1,50}`, `custom_[a-z0-9_]{1,50}` or
   `apply_url`, and must not be protected meta. Anything else is ignored, so
   `_yoast_*`, ACF or WooCommerce keys are out of reach.
 - Values must be scalars; they are stored as strings. A key with a non-scalar
   value is skipped and its stored value is left as it was.
-- At most 100 keys. A payload that is not an object, or is larger, is rejected
-  with a `400` **before** the post is created.
+- At most 100 keys, counted across both baskets. A payload or basket that is
+  not an object, or a larger payload, is rejected with a `400` **before** the
+  post is created.
 - **Sweep.** Every publication carries the complete state of the offer, and an
   empty value is omitted rather than sent as `""`. So after writing, every
   `job_*`, `custom_*` and `apply_url` key the payload did not carry is deleted.

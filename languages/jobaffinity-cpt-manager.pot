@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-09-23T14:56:38+00:00\n"
+"POT-Creation-Date: 2026-09-24T14:39:27+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: jobaffinity-cpt-manager\n"
@@ -355,22 +355,22 @@ msgstr ""
 msgid "%s attributes"
 msgstr ""
 
-#: includes/class-ccptm-easyposting.php:123
-msgid "Complete set of JobAffinity fields for the offer. Absent keys are deleted."
-msgstr ""
-
-#: includes/class-ccptm-easyposting.php:145
-#: includes/class-ccptm-rest.php:186
-msgid "The field must be an object of key/value pairs."
+#: includes/class-ccptm-easyposting.php:130
+msgid "Complete set of JobAffinity fields for the offer, in a \"standard\" and a \"custom\" basket. Absent keys are deleted."
 msgstr ""
 
 #. translators: %d: maximum number of keys
-#: includes/class-ccptm-easyposting.php:156
+#: includes/class-ccptm-easyposting.php:204
 #, php-format
 msgid "At most %d keys are accepted."
 msgstr ""
 
-#: includes/class-ccptm-easyposting.php:169
+#: includes/class-ccptm-easyposting.php:221
+#: includes/class-ccptm-rest.php:186
+msgid "The field must be an object of key/value pairs."
+msgstr ""
+
+#: includes/class-ccptm-easyposting.php:240
 #: includes/class-ccptm-rest.php:201
 msgid "You are not allowed to edit this post."
 msgstr ""

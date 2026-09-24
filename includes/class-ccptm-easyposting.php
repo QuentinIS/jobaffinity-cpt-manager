@@ -19,6 +19,12 @@ if ( ! defined( 'ABSPATH' ) ) {
  * class writes the post meta itself. A key added on the JobAffinity side
  * shows up on the next publication, with nothing to declare.
  *
+ * The payload holds two baskets: "standard" carries the keys as they are
+ * stored (job_*, apply_url), "custom" carries the client-defined fields
+ * without their prefix, which is added here ("regions" becomes
+ * "custom_regions"). Both are flattened into one set of keys before anything
+ * else, so the rules below apply to the stored key names.
+ *
  * An empty value is not sent as "": it is not sent at all. A key absent from
  * the payload therefore means "emptied or removed on the JobAffinity side",
  * never "unchanged", which is why every write is followed by a sweep of the
@@ -31,7 +37,8 @@ if ( ! defined( 'ABSPATH' ) ) {
  * - is_protected_meta(), the filterable core function, rather than a test on
  *   a leading underscore;
  * - the edit_post_meta capability, which honours any auth callback;
- * - a constrained key format and a cap of 100 keys per request.
+ * - a constrained key format and a cap of 100 keys per request, counted
+ *   after flattening.
  *
  * None of this grants a new privilege: an account that can edit the post can
  * already write any post meta through the Custom Fields panel or XML-RPC.
@@ -120,10 +127,16 @@ class CCPTM_Easyposting {
 					// malformed payload is rejected with a 400 BEFORE
 					// wp_insert_post(), rather than leaving an empty post behind.
 					'schema'          => array(
-						'description'   => __( 'Complete set of JobAffinity fields for the offer. Absent keys are deleted.', 'jobaffinity-cpt-manager' ),
-						'type'          => 'object',
-						'maxProperties' => self::MAX_KEYS,
-						'context'       => array(),
+						'description' => __( 'Complete set of JobAffinity fields for the offer, in a "standard" and a "custom" basket. Absent keys are deleted.', 'jobaffinity-cpt-manager' ),
+						'type'        => 'object',
+						'properties'  => array(
+							'standard' => array( 'type' => 'object' ),
+							'custom'   => array( 'type' => 'object' ),
+						),
+						'context'     => array(),
+						'arg_options' => array(
+							'validate_callback' => array( $this, 'validate_fields' ),
+						),
 					),
 				)
 			);
@@ -131,14 +144,77 @@ class CCPTM_Easyposting {
 	}
 
 	/**
+	 * Validates the field as an endpoint argument, before the post is written.
+	 *
+	 * The schema checks the shape of each basket; the cap on the number of keys
+	 * spans both baskets, which JSON Schema cannot express.
+	 *
+	 * @param mixed           $value   Value received.
+	 * @param WP_REST_Request $request Current request.
+	 * @param string          $param   Parameter name.
+	 * @return true|WP_Error
+	 */
+	public function validate_fields( $value, $request, $param ) {
+		$valid = rest_validate_request_arg( $value, $request, $param );
+		if ( true !== $valid ) {
+			return $valid;
+		}
+
+		if ( count( self::flatten( $value ) ) > self::MAX_KEYS ) {
+			return self::too_many_fields();
+		}
+
+		return true;
+	}
+
+	/**
+	 * Flattens the "standard" and "custom" baskets into one set of keys.
+	 *
+	 * @param array|object $fields Field value received.
+	 * @return array Stored key => value.
+	 */
+	private static function flatten( $fields ) {
+		$fields   = (array) $fields;
+		$incoming = array();
+
+		if ( isset( $fields['standard'] ) && ( is_array( $fields['standard'] ) || is_object( $fields['standard'] ) ) ) {
+			foreach ( (array) $fields['standard'] as $key => $value ) {
+				$incoming[ $key ] = $value;
+			}
+		}
+
+		if ( isset( $fields['custom'] ) && ( is_array( $fields['custom'] ) || is_object( $fields['custom'] ) ) ) {
+			foreach ( (array) $fields['custom'] as $key => $value ) {
+				$incoming[ 'custom_' . $key ] = $value;
+			}
+		}
+
+		return $incoming;
+	}
+
+	/**
+	 * Error returned when a payload carries more than MAX_KEYS keys.
+	 *
+	 * @return WP_Error
+	 */
+	private static function too_many_fields() {
+		return new WP_Error(
+			'ccptm_too_many_fields',
+			/* translators: %d: maximum number of keys */
+			sprintf( __( 'At most %d keys are accepted.', 'jobaffinity-cpt-manager' ), self::MAX_KEYS ),
+			array( 'status' => 400 )
+		);
+	}
+
+	/**
 	 * POST / PUT: writes the fields received, then sweeps the absent ones.
 	 *
-	 * @param array|object $fields Key/value pairs received.
+	 * @param array|object $fields "standard" and "custom" baskets received.
 	 * @param WP_Post      $post   Post being written to.
 	 * @return true|WP_Error
 	 */
 	public function write_fields( $fields, $post ) {
-		// Defence in depth: the schema already enforces both rules.
+		// Defence in depth: validate_fields() already enforces both rules.
 		if ( ! is_array( $fields ) && ! is_object( $fields ) ) {
 			return new WP_Error(
 				'ccptm_invalid_fields',
@@ -147,15 +223,10 @@ class CCPTM_Easyposting {
 			);
 		}
 
-		$fields = (array) $fields;
+		$incoming = self::flatten( $fields );
 
-		if ( count( $fields ) > self::MAX_KEYS ) {
-			return new WP_Error(
-				'ccptm_too_many_fields',
-				/* translators: %d: maximum number of keys */
-				sprintf( __( 'At most %d keys are accepted.', 'jobaffinity-cpt-manager' ), self::MAX_KEYS ),
-				array( 'status' => 400 )
-			);
+		if ( count( $incoming ) > self::MAX_KEYS ) {
+			return self::too_many_fields();
 		}
 
 		$post_id = is_object( $post ) && isset( $post->ID ) ? (int) $post->ID : 0;
@@ -175,7 +246,7 @@ class CCPTM_Easyposting {
 		// their value. Both are kept by the sweep: present is not absent.
 		$keep = array();
 
-		foreach ( $fields as $key => $value ) {
+		foreach ( $incoming as $key => $value ) {
 			if ( ! is_string( $key ) || ! preg_match( self::KEY_PATTERN, $key ) ) {
 				continue;
 			}
